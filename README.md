@@ -13,14 +13,16 @@ This work is published under a Creative Commons Attribution-NonCommercial-NoDeri
 ###Set up a project directory
 
 
-![](images/project_dir_diagram.jpg)
-
+<img src="images/project_dir_diagram.jpg" style="width: 600px;"/>
 
 ###A fun intro
 
 [![Spatial Visualisation](http://img.youtube.com/vi/rJC7B-9ZfhE/0.jpg)](http://www.youtube.com/watch?v=rJC7B-9ZfhE)
 
-This cool graphic 
+This exercise is from James Cheshire, a very cool analyst from University College London. His site is spatial.ly. His Population Lines image now hangs in my loungeroom! 
+<img src="images/pop_lines.jpg" style="width: 400px;"/>
+
+This graphic uses ggplot (which we'll get to later...) to simply plot the routes that south England residents too and from work each day.
 
 
 ```r
@@ -29,7 +31,7 @@ library(plyr)
 library(ggplot2)
 library(maptools)
 
-##read in the data
+##read in the data- it is a really big dataset! It will take some time to read in
 input<-read.table("Data/wu03ew_v1.csv", sep=",", header=T)
 
 ##select only the origin, destination and total kms from the data
@@ -530,7 +532,7 @@ The key points know for Polygon data (and indeed for most Spatial data in R) is:
 
 ##Visualising Spatial Data
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/X9UtUzHDn4c" frameborder="0" allowfullscreen></iframe>
+[![Spatial Visualisation](http://img.youtube.com/vi/X9UtUzHDn4c/0.jpg)](http://www.youtube.com/watch?v=X9UtUzHDn4c)
 
 
 
@@ -574,6 +576,18 @@ box()
 par(oldpar)
 ```
 
+
+##Excercises
+1. In the data folder you'll find a list of all airports in the world. Read in that data, subset to all airports in Canada. Create a SpatialPointsDataFrame of this data and create a nice plot of all Canadian airports.
+*note* In the Data folder you will find a *Shapefile* of the Canadian coastline. We haven't covered this yet, but you can input, and plot this shapefile using the following code:
+
+
+```r
+can_border <- readOGR(dsn='Data', layer='Canada')
+can_border <- spTransform(can_border, CRS('+proj=longlat +ellps=WGS84'))
+```
+
+
 ####rgdal and importing other spatial data types
 
 The GDAL (Geospatial Data Abstraction Library) is a library for reading and writing raster geospatial data formats, and is released under the permissive X/MIT style free software license by the Open Source Geospatial Foundation. As a library, it presents a single abstract data model to the calling application for all supported formats. It may also be built with a variety of useful command-line utilities for data translation and processing. 
@@ -583,12 +597,177 @@ Calls to the GDAL framework are made using the r package `rgdal`. You should now
 The main reason this package is so important for working scientists and analysts, is that it allows the import and export of the common ESRI data, shapefiles.
 
 
+```r
+install.packages('rgdal')
+library('rgdal')
+```
+
+*Reef Life Survey*
+
+RLS consists of a network of trained, committed recreational SCUBA divers, and an Advisory Committee made up of managers and scientists with direct needs for the data collected, and recreational diver representatives.
+
+The RLS diver network undertakes scientific assessment of reef habitats using visual census methods, through a combination of targeted survey expeditions organised at priority locations under the direction of the Advisory Committee, and through the regular survey diving activity of trained divers in their local waters. 
+
+Here is a subset of there data available from the Integrated Marine Observing System, accessed here https://imos.aodn.org.au/imos123/home.
+
+Lets read it in and then map their Sydney sites. I have exported raw data and converted to an ESRI Shapefile for use in most GIS.
+
+The key component of reading in Shapefile data is to use the `readOGR` function. Note that several other methods exists, but the readOGR, from the rgdal package is most reliable and useful.
+
+
+```r
+rls <- readOGR(dsn='Data', layer='rls_sites_sydney')
+summary(rls)
+plot(rls)
+```
+
+lets also bring in a Sydney Harbour shoreline layer, also as an ESRI Shapefile.
+
+
+```r
+syd <- readOGR(dsn='Data', layer='SH_est_poly_utm')
+```
+
+The Sydney shoreline files are simply in Longitude and Latitude (using the WGS84 representation of the Earth). Lets change this CRS to represent a local projection commonly used here in New South Wales. It is simply the Universal Transverse Mercator. 
+
+The Universal Transverse Mercator (UTM) conformal projection uses a 2-dimensional Cartesian coordinate system to give locations on the surface of the Earth. Like the traditional method of latitude and longitude, it is a horizontal position representation, i.e. it is used to identify locations on the Earth independently of vertical position. However, it differs from that method in several respects.
+
+The UTM system divides the Earth between 80°S and 84°N latitude into 60 zones, each 6° of longitude in width. Zone 1 covers longitude 180° to 174° W; zone numbering increases eastward to zone 60 that covers longitude 174 to 180 East.
+
+The `spTransorm` function within `rgdal` can *project* our lat/lon CRS into the correct UTM zone. Here in Sydney, the UTM zone is 56.
+
+
+```r
+syd <- spTransform(syd, CRS('+proj=utm +zone=56 +south +ellps=WGS84 +units=m +no_defs'))
+```
+
+note the rls data is already projected, and this projection is brought into R from the dbf file of the ESRI data suite.
+
+Lets plot this out nicely.
+
+
+```r
+plot(syd, axes=F)
+plot(rls, pch=16, col='violetred',add=T)
+title('Reef Life Survey Sites - Sydney Area', line=0.5)
+
+##add scale bar and 
+library(GISTools)
+map.scale(xc= 325000, yc= 6250000, len=2000, ndivs=2, units='m')
+north.arrow(xb= 325000, yb= 6258000, len=100)
+```
+
+[![Spatial Visualisation](http://img.youtube.com/vi/qGllzWt0acU/0.jpg)](http://www.youtube.com/watch?v=qGllzWt0acU)
+
+##Two common spatial manipulations
+
+####Point in Polygon Operations
+
+The figure produced above has points that fall outside the actual Harbour. We can do a Point in Polygon operation to remove these points.
 
 
 
+```r
+over(rls, as(syd, "SpatialPolygons")) #which sites are 'over' the polygon. Creates 
+!is.na(over(rls, as(syd, "SpatialPolygons")))
+inside_harb <- is.na(over(rls, as(syd, "SpatialPolygons")))
 
-##Some common spatial manipulation
+rls_harb <- rls[!inside_harb, ]
+summary(rls_harb)
+plot(syd)
+plot(rls_harb, col='violetred', add=T, pch=18)
+title('Reef Life Survey Sites - Sydney Harbour only', line=0.5)
+map.scale(xc= 325000, yc= 6250000, len=2000, ndivs=2, units='kms')
+north.arrow(xb= 325000, yb= 6258000, len=100)
+```
 
+####Spatial Polygon Dissolves
+
+Sometimes there is a need to dissolve smaller polygons into larger ones. Think, for example, about having a Spatial Polygon dataset of Postal codes that you need to aggregate up into states. We'll work with a dataset that notes the participation in school sport across areas of the greater London metro area. Pretend there is a need to aggregate this shapefile simply into the area of greater London.
+
+
+```r
+london_sport <- readOGR(dsn="Data", layer="london_sport")
+proj4string(london_sport) <- CRS("+init=epsg:27700")
+london_sport$london <- rep(1, length(london_sport))
+london <- unionSpatialPolygons(london_sport, IDs=london_sport$london)
+plot(london)
+```
+
+
+###Exercise Two
+
+1. There are a bunch of cool spatial methods that can improve the efficiency of your work.
+One of them is random spatial sampling. Say you need to randomly position sampling sites across an area. The most basic way of choosing these sites might make use of `spsample`. Use the help file on `spsample` to pick, and then map, 40 Fish traps to be deployed into Sydney Harbour every year. Your boss wants a single map, with colour coded symbols denoting which of the three years the fish traps will be deployed i.e. three colours on the map. 
+
+
+###Publication ready mapping
+
+We wouldn't really use the base plotting function for anything other than basic maps. We tend to use the very powerful `ggplot2` package by Hadley Wickham.
+
+Lets work with the London Sport Participation dataset to start.
+
+
+```r
+##To get the shapefiles into a 
+##format that can be plotted we have to use the fortify() function. 
+##he “polygons” slot contains the geometry of the polygons in the form 
+##of the XY coordinates used to draw the polygon outline. While ggplot is good, 
+##there is still no way for it to work out what is going on there. i.e. we need to convert
+##this geometry into a `normal` data.frame.
+
+sport.f <- fortify(london_sport, region = "ons_label")
+head(sport.f)
+
+##need to merge back in the attribute data
+sport.f <- merge(sport.f, london_sport@data, by.x = "id", by.y = "ons_label")
+head(sport.f)
+
+
+Map <- ggplot(sport.f, aes(long, lat, group = group, fill = Partic_Per)) + 
+	geom_polygon() + 
+    coord_equal() + 
+    labs(x = "Easting (m)", y = "Northing (m)", fill = "% Sport Partic.") + 
+    ggtitle("London Sports Participation")
+Map
+
+##and if we wanted black and white for publication
+
+Map + scale_fill_gradient(low = "white", high = "black")
+```
+
+Remember faceting? Well that can be done with maps as well using ggplot. We need to use a function called `melt` and `reshape` to get the data in the right form though.
+
+
+```r
+###faceting maps - courtesy of James Cheshire and spatial.ly
+library(reshape2) 
+london.data <- read.csv("Data/census-historic-population-borough.csv")
+head(london.data)
+
+london.data.melt <- melt(london.data, id = c("Area.Code", "Area.Name"))
+london.data.melt[1:50,]
+
+##remember what sport.f id was! How cool, now we can merge these data.
+head(sport.f)
+plot.data <- merge(sport.f, london.data.melt, by.x = "id", by.y = "Area.Code")
+
+##order so plots are sensible i.e. in time order
+plot.data <- plot.data[order(plot.data$order), ]
+
+##now simply facet them in the usual ggplot way!
+ggplot(data = plot.data, aes(x = long, y = lat, fill = value, group = group)) + 
+    geom_polygon() + geom_path(colour = "grey", lwd = 0.1) + coord_equal() + 
+    facet_wrap(~variable)
+```
+
+
+[![Spatial Visualisation](http://img.youtube.com/vi/6pI77r3oAxw/0.jpg)](http://www.youtube.com/watch?v=6pI77r3oAxw)
+
+Now go back to the start of the workbook, and try and make sense of the London Commute map code.
+
+Exercises Three
+1. In the data folder there is a file called `cts_srr_04_2015_pt`. This is the Automatic Identification System data for all ships entering Australian waters for the month of April this year. Also in the folder, you will find a rectangular shapefile that covers the south east coast of Australia. Subset the AIS data to the South East coast of Australia. Plot this data in a nice graph (preferably using GGPLOT2). See if you can find the outline of Australia somewhere on the internet (obviously as a shapefile) and plot this too.
 
 
 ## Working with Rasters
