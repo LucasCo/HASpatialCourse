@@ -15,7 +15,7 @@ This work is published under a Creative Commons Attribution-NonCommercial-NoDeri
 ###Set up a project directory
 
 
-<img src="images/project_dir_diagram.jpg" style="width: 600px;"/>
+<img src="Publication/images/project_dir_diagram.jpg" style="width: 600px;"/>
 
 ###A fun intro
 
@@ -85,7 +85,7 @@ GitHub is a platform for hosting and collaborating on projects. You don’t have
 -Write a short description.
 -Select Initialize this repository with a README.
 
-![](images/github_screenshot.png)
+![](Publication/images/github_screenshot.png)
 
 
 3. Navigate to LucasCo/HASpatial. There you will find the the course materials that we will be working from.
@@ -135,7 +135,7 @@ An understanding of these classes is important, as most spatial data in R uses n
 Different spatial classes in R *inherit* their attributes from other classes.
 
 #### 1. `Spatial class`
-![](images/spatial_class_box.jpg)
+![](Publication/images/spatial_class_box.jpg)
 
 ```{r,tidy=T}
 library(sp)
@@ -164,7 +164,7 @@ S
 
 ####2. `Spatial Points`
 
-![](images/spatial_points_class_box.jpg)
+![](Publication/images/spatial_points_class_box.jpg)
 
 Let's start using some real data!
 
@@ -241,7 +241,7 @@ summary(airports_sp[airports_oz,])
 
 ####3. `SpatialPointsDataFrame`
 
-![](images/spatialpoints_class_diagram.jpg)
+![](Publication/images/spatialpoints_class_diagram.jpg)
 
 Often we need to associate attribute data to simple point locations. The `SpatialPointsDataFrame` is the container for this sort of data. You can see from the diagram above that the `SpatialPointsDataFrame` object extends the `SpatialPoints` class, and inherits the `bbox`, `proj4string` and `coords` objects. 
 
@@ -270,7 +270,7 @@ airports_spdf <- SpatialPointsDataFrame(airports_sp, airports)
 
 ####4. Lines, Lines, Lines!
 
-![](images/spatial_lines_class_diagram.jpg)
+![](Publication/images/spatial_lines_class_diagram.jpg)
 
 Lines are tricky. In the old `S` language they were simply represented by a series of numbers seperated by an `NA` that represented the end of the line. In R the most basic representation of a line is the `Line` object, essentially a matrix of 2-D coordinates. Many of these `Line` objects form the `Lines` slot of a `Lines` object. Other spatial data like a CRS and the bounding box are included in `SpatialLines` objects.
 
@@ -305,7 +305,7 @@ Lets plot it for funsies. See if you can do it. Hint: just use the `plot()` func
 
 #### 5. SpatialPolygons
 
-![](images/spatial_polygons_class_diagram.jpg)
+![](Publication/images/spatial_polygons_class_diagram.jpg)
 
 
 Lets use the area around Auckland as an example of working with polygon data.
@@ -645,7 +645,7 @@ library(rgdal)
 ### What is a raster?
 Now we're ready to go, but firstly, what is a raster? Well, simply, it is a grid of coordinates for which we can define a value at certain coordinate locations, and we display the corresponding grid elements according to those values. The raster data is essentially a matrix, but a raster is special in that we define what shape and how big each grid element is, and usually where the grid should sit in some known space (i.e. a geographic projected coordinate system).
 
-![Raster Graphics](Rgb-raster-image.png)
+![Raster Graphics](Publication/images/Rgb-raster-image.png)
 
 ### Understanding Raster Data
 
