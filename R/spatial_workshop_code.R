@@ -57,7 +57,6 @@ theme(panel.background = element_rect(fill='black',colour='black'))+quiet+coord_
 
 
 
-
 ###SpatialPolygons class
 
 library('maps')
@@ -134,6 +133,8 @@ text(x = c(180200,181200), y = rep(329750, 2), c("0", "1 km"))
 SpatialPolygonsRescale(layout.north.arrow(), offset = c(178750,332500),
     scale = 400, plot.grid = FALSE)
 box()
+
+
 
 
 

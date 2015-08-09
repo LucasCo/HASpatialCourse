@@ -17,9 +17,8 @@ This work is published under a Creative Commons Attribution-NonCommercial-NoDeri
 
 
 ###A fun intro
-<iframe src="https://player.vimeo.com/video/110348926" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/rJC7B-9ZfhE" frameborder="0" allowfullscreen></iframe>
+[![Spatial Visualisation](https://www.youtube.com/watch?v=rJC7B-9ZfhE/0.jpg)](https://www.youtube.com/watch?v=rJC7B-9ZfhE)
 
 This cool graphic 
 
@@ -86,6 +85,9 @@ GitHub is a platform for hosting and collaborating on projects. You don’t have
 ![](images/github_screenshot.png)
 
 
+3. Navigate to LucasCo/HASpatial. There you will find the the course materials that we will be working from.
+
+4. *Fork* the repo into your own GitHub account.
 
 
 ###A brief primer on R classes
@@ -572,27 +574,13 @@ box()
 par(oldpar)
 ```
 
+####rgdal and importing other spatial data types
 
-```r
- wrld <- map("world", interior=FALSE, xlim=c(-179,179), 
-    ylim=c(-89,89), plot=FALSE)
- wrld_p <- pruneMap(wrld, xlim=c(-179,179))
- llCRS <- CRS("+proj=longlat +ellps=WGS84")
- wrld_sp <- map2SpatialLines(wrld_p, proj4string=llCRS)
- prj_new <- CRS("+proj=moll")
- library(rgdal)
- wrld_proj <- spTransform(wrld_sp, prj_new)
- wrld_grd <- gridlines(wrld_sp, easts=c(-179,seq(-150,150,50), 179.5),              
-   norths=seq(-75,75,15), ndiscr=100)
- wrld_grd_proj <- spTransform(wrld_grd, prj_new)
- at_sp <- gridat(wrld_sp, easts=0, norths=seq(-75,75,15), offset=0.3)
- at_proj <- spTransform(at_sp, prj_new)
- plot(wrld_proj, col="grey60")
- plot(wrld_grd_proj, add=TRUE, lty=3, col="grey70")
- text(coordinates(at_proj), pos=at_proj$pos, offset=at_proj$offset,                 
-   labels=parse(text=as.character(at_proj$labels)), cex=0.6)
-```
+The GDAL (Geospatial Data Abstraction Library) is a library for reading and writing raster geospatial data formats, and is released under the permissive X/MIT style free software license by the Open Source Geospatial Foundation. As a library, it presents a single abstract data model to the calling application for all supported formats. It may also be built with a variety of useful command-line utilities for data translation and processing. 
 
+Calls to the GDAL framework are made using the r package `rgdal`. You should now have this on your computer. Hopefully it didn't cause too much trouble!
+
+The main reason this package is so important for working scientists and analysts, is that it allows the import and export of the common ESRI data, shapefiles.
 
 
 
