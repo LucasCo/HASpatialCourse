@@ -20,7 +20,8 @@ This work is published under a Creative Commons Attribution-NonCommercial-NoDeri
 [![Spatial Visualisation](http://img.youtube.com/vi/rJC7B-9ZfhE/0.jpg)](http://www.youtube.com/watch?v=rJC7B-9ZfhE)
 
 This exercise is from James Cheshire, a very cool analyst from University College London. His site is spatial.ly. His Population Lines image now hangs in my loungeroom! 
-<img src="Publication/images/pop_lines.jpg" style="width: 400px;"/>
+
+<img src="Publication/images/pop_lines.jpg" style="width: 200px;"/>
 
 This graphic uses ggplot (which we'll get to later...) to simply plot the routes that south England residents too and from work each day.
 
