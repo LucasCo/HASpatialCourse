@@ -6,7 +6,7 @@ options(width=120)
 
 
 This work is published under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
-<img src="images/Cc_by-nc-nd_euro_icon.png" style="width: 200px;"/>
+<img src="Publication/images/Cc_by-nc-nd_euro_icon.png" style="width: 200px;"/>
 
 
 
@@ -22,7 +22,7 @@ This work is published under a Creative Commons Attribution-NonCommercial-NoDeri
 [![Spatial Visualisation](http://img.youtube.com/vi/rJC7B-9ZfhE/0.jpg)](http://www.youtube.com/watch?v=rJC7B-9ZfhE)
 
 This exercise is from James Cheshire, a very cool analyst from University College London. His site is spatial.ly. His Population Lines image now hangs in my loungeroom! 
-<img src="images/pop_lines.jpg" style="width: 400px;"/>
+<img src="Publication/images/pop_lines.jpg" style="width: 400px;"/>
 
 This graphic uses ggplot (which we'll get to later...) to simply plot the routes that south England residents too and from work each day.
 
@@ -645,7 +645,7 @@ library(rgdal)
 ### What is a raster?
 Now we're ready to go, but firstly, what is a raster? Well, simply, it is a grid of coordinates for which we can define a value at certain coordinate locations, and we display the corresponding grid elements according to those values. The raster data is essentially a matrix, but a raster is special in that we define what shape and how big each grid element is, and usually where the grid should sit in some known space (i.e. a geographic projected coordinate system).
 
-![Raster Graphics](Publication/images/Rgb-raster-image.png)
+![Raster Graphics](Publication/Rgb-raster-image.png)
 
 ### Understanding Raster Data
 
