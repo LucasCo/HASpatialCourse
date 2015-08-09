@@ -18,7 +18,7 @@ This work is published under a Creative Commons Attribution-NonCommercial-NoDeri
 
 ###A fun intro
 
-[![Spatial Visualisation](https://www.youtube.com/watch?v=rJC7B-9ZfhE/0.jpg)](https://www.youtube.com/watch?v=rJC7B-9ZfhE)
+[![Spatial Visualisation](http://img.youtube.com/vi/rJC7B-9ZfhE/0.jpg)](http://www.youtube.com/watch?v=rJC7B-9ZfhE)
 
 This cool graphic 
 
