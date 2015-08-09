@@ -4,7 +4,7 @@
 
 
 This work is published under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
-<img src="Publication/images/Cc_by-nc-nd_euro_icon.png" style="width: 200px;"/>
+<img src="Publication/images/Cc_by-nc-nd_euro_icon.png" style="width: 100px;"/>
 
 
 
@@ -13,7 +13,7 @@ This work is published under a Creative Commons Attribution-NonCommercial-NoDeri
 ###Set up a project directory
 
 
-<img src="Publication/images/project_dir_diagram.jpg" style="width: 600px;"/>
+<img src="Publication/images/project_dir_diagram.jpg" style="width: 200px;"/>
 
 ###A fun intro
 
