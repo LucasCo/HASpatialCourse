@@ -1,0 +1,936 @@
+#Spatial Data in R
+##Sydney Institute of Marine Science 10th August 2015
+```{r, echo=FALSE}
+options(width=120)
+```
+
+
+This work is published under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
+<img src="images/Cc_by-nc-nd_euro_icon.png" style="width: 200px;"/>
+
+
+
+##Hello World. Initial Steps
+
+###Set up a project directory
+
+
+![](images/project_dir_diagram.jpg)
+
+
+###A fun intro
+<iframe src="https://player.vimeo.com/video/110348926" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/rJC7B-9ZfhE" frameborder="0" allowfullscreen></iframe>
+
+This cool graphic 
+
+```{r, eval=FALSE}
+###Mapping Journeys to Work in the UK
+library(plyr)
+library(ggplot2)
+library(maptools)
+
+##read in the data
+input<-read.table("Data/wu03ew_v1.csv", sep=",", header=T)
+
+##select only the origin, destination and total kms from the data
+input<- input[,1:3]
+names(input)<- c("origin", "destination","total")
+
+##download and input the population centroids from 
+centroids <- read.csv("Data/msoa_popweightedcentroids.csv")
+or.xy <- merge(input, centroids, by.x="origin", by.y="Code")
+
+names(or.xy) <- c("origin", "destination", "trips", "o_name", "oX", "oY")
+dest.xy <- merge(or.xy, centroids, by.x="destination", by.y="Code")
+names(dest.xy) <- c("origin", "destination", "trips", "o_name", "oX", "oY","d_name", "dX", "dY")
+
+##plotting in ggplot2
+xquiet <- scale_x_continuous("", breaks=NULL)
+yquiet <-scale_y_continuous("", breaks=NULL)
+quiet <-list(xquiet, yquiet)
+
+ggplot(dest.xy[which(dest.xy$trips>10),], aes(oX, oY))+
+geom_segment(aes(x=oX, y=oY,xend=dX, yend=dY, alpha=trips), col="white")+
+scale_alpha_continuous(range = c(0.03, 0.3))+
+theme(panel.background = element_rect(fill='black',colour='black'))+quiet+coord_equal()
+```
+
+###Some preliminaries
+
+#####Installing rgdal on a Mac
+*The Easy Way*
+In R run: install.packages(‘rgdal’,repos=”http://www.stats.ox.ac.uk/pub/RWin“)
+
+*The Hard Way* If the easy way doesn't work.
+Download and install GDAL 1.8 Complete and  PROJ framework v4.7.0-2   from: http://www.kyngchaos.com/software/frameworks%29
+
+Download the latest version of rgdal from CRAN. Currently 0.7-1
+Run Terminal.app, and in the same directory as rgdal_0.7-1.tar.gz run:
+
+R CMD INSTALL --configure-args='--with-gdal-config=/Library/Frameworks/GDAL.framework/Programs/gdal-config --with-proj-include=/Library/Frameworks/PROJ.framework/Headers --with-proj-lib=/Library/Frameworks/PROJ.framework/unix/lib' rgdal_0.7-1.tar.gz
+
+####Git and GitHub
+GitHub is a platform for hosting and collaborating on projects. You don’t have to worry about losing data on your hard drive or managing a project across multiple computers — sync from anywhere. Most importantly, GitHub is a collaborative and asynchronous workflow for building software better, together.
+
+1. Sign Up here. https://github.com/join
+
+
+
+2. To create a new repository
+-Click the  icon next to your username, top-right.
+-Name your repository hello-world.
+-Write a short description.
+-Select Initialize this repository with a README.
+
+![](images/github_screenshot.png)
+
+
+
+
+###A brief primer on R classes
+
+Remember that:
+
+```{r,tidy=T}
+x <- sum(c(2,5,7,1))
+x
+```
+
+`x` is an object in R. It has a class, which represents the way the data in x is stored.
+
+```{r,tidy=T}
+class(x)
+```
+we can see that the class of `x` is `numeric`. 
+
+Classes determine what actions functions are going to have on the object. These functions, for example, include `print, summary, plot` etc. If no method is avialable for a specific class then it will try and default to known generic methods.
+
+When R was first being created, there were no real functions. They were introduced in 1992 in a form called 'S3' classes, or 'old-style classes'.
+
+Think back to the classic data set shipped with R, `mtcars'.
+
+```{r,tidy=T}
+data(mtcars)
+class(mtcars)
+typeof(mtcars)
+names(mtcars)
+```
+
+
+mtcars is a `data.frame` that is stored as a `list` (this is why things like `lapply` will work on `data.frames`).
+
+Old style classes are generally `lists` with attributes and not defined formally. In 1998 new style `S4` style classes were introduced. The main definition between old and new style classes that that the new S4 classes have clear, formal, definitions that can specify the type and storage structure for each of the components, called *slots*.
+
+An understanding of these classes is important, as most spatial data in R uses new style, *S4* classes.
+
+
+###R and spatial 
+
+Different spatial classes in R *inherit* their attributes from other classes.
+
+#### 1. `Spatial class`
+![](images/spatial_class_box.jpg)
+
+```{r,tidy=T}
+library(sp)
+```
+
+```{r,tidy=T}
+getClass("Spatial")
+```
+
+```{r,tidy=T}
+m <- matrix(c(0,0,1,1), ncol=2, dimnames = list(NULL, c("min", "max")))
+print(m)
+
+
+crs <- CRS(projargs = as.character(NA))
+print(crs)
+
+S <- Spatial(bbox = m, proj4string= crs)
+S
+```
+
+* We first creat a bounding box by making a 2 x 3 matrix.
+* Create a CRS object (a specific object defined in the package `sp`). Give it no arguments.
+* Create our first `Spatial` object, calling it `S`. We can see it has a `bbox` and a CRS (called a proj4string).
+
+
+####2. `Spatial Points`
+
+![](images/spatial_points_class_box.jpg)
+
+Let's start using some real data!
+
+The data below is from the OpenFlights project. OpenFlights is a tool that lets you map your flights around the world, search and filter them in all sorts of interesting ways, calculate statistics automatically, and share your flights and trips with friends and the entire world (if you wish). It's also the name of the open-source project to build the tool.
+
+They have put their data (and code) on a public GitHub repo. Download and load into R directly.
+
+```{r,tidy=T, cache=TRUE}
+library(RCurl)
+URL <- "https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat"
+x <- getURL(URL)
+
+airports <- read.csv(textConnection(x), header=F)
+
+```
+
+```{r, tidy=T}
+colnames(airports) <- c("ID", "name", "city", "country", "IATA_FAA", "ICAO", "lat", "lon", "altitude", "timezone", "DST", "TimeZone")
+head(airports)
+```
+
+The only difference between the `Spatial` and `SpatialPoints` class is the addition of the `coords` *slot*.
+
+```{r}
+air_coords <- cbind(airports$lon, airports$lat)
+air_CRS <- CRS("+proj=longlat +ellps=WHS84")
+
+airports_sp <- SpatialPoints(air_coords, air_CRS)
+summary(airports_sp)
+```
+
+
+####Methods
+
+#####Bounding Box
+Note that we did not specify a Bounding Box even though it is an integral component of the `Spatial` class. A bounding box is automatically assigned by taking the minimum and maximum latitude and longitude of the data.
+
+
+```{r}
+bbox(airports_sp)
+```
+
+
+#####Projection and datum
+
+All spatial objects have a generic method `proj4string`. This sets the coordinate reference of the associated spatial data. Proj4 strings are a compact, but lightly quirky looking, way of specifying location references. Using the Proj4 syntax, the complete parameters to specify a CRS can be given. For example the PROJ4 string we usually use in Sydney is *+proj=utm +zone=56 +south +ellps=GRS80 +units=m +no_defs*. Here we essentially state that the CRS we are using is UTM (a projected CRS) in Zone 56. Most commonly we can start with an unprojected CRS (simply the longitute and latitude) using the CRS in the code above *+proj=longlat +ellps=WHS84*.
+
+Proj4 strings can be assigned and re-assigned. NOTE that re-assigning a CRS does does NOT transform it. Simply saying the proj=utm will not convert the coordinates from long/lat into UTM.
+
+```{r}
+proj4string(airports_sp) <- CRS(as.character(NA))
+summary(airports_sp)
+
+proj4string(airports_sp) <- air_CRS
+```
+
+
+#####Subsetting 
+Subsetting SpatialPoints can be accomplished in the same manner as most other subsetting in R - using logical vectors.
+
+```{r}
+airports_oz <- which(airports$country=='Australia')
+head(airports_oz)
+
+oz_coords <- coordinates(airports_sp)[airports_oz,]
+head(oz_coords)
+```
+
+You can also use the subsetting methods directly on the SpatialPoints.
+
+```{r}
+summary(airports_sp[airports_oz,])
+```
+
+####3. `SpatialPointsDataFrame`
+
+![](images/spatialpoints_class_diagram.jpg)
+
+Often we need to associate attribute data to simple point locations. The `SpatialPointsDataFrame` is the container for this sort of data. You can see from the diagram above that the `SpatialPointsDataFrame` object extends the `SpatialPoints` class, and inherits the `bbox`, `proj4string` and `coords` objects. 
+
+
+```{r, eval=FALSE}
+getClass('SpatialPointsDataFrame')
+```
+
+So far we have downloaded a `data.frame`, where 2 columns were latitude and longitude, and constructed a simple SpatialPoints object from it. 
+
+A `SpatialPointsDataFrame` simply connects the SpatialPoints with the rest of the attribute data. 
+
+A key consideration here is that the `row.names` of both the matrix of coordinates and the data need to match. 
+
+```{r, eval=FALSE}
+airports_spdf <- SpatialPointsDataFrame(coords=air_coords, data=airports, proj4string=airCRS)
+summary(airports_spdf)
+```
+
+We can shorten this by simply joining a `SpatialPoints` objects with the data.
+
+```{r, eval=FALSE}
+airports_spdf <- SpatialPointsDataFrame(airports_sp, airports)
+```
+
+
+####4. Lines, Lines, Lines!
+
+![](images/spatial_lines_class_diagram.jpg)
+
+Lines are tricky. In the old `S` language they were simply represented by a series of numbers seperated by an `NA` that represented the end of the line. In R the most basic representation of a line is the `Line` object, essentially a matrix of 2-D coordinates. Many of these `Line` objects form the `Lines` slot of a `Lines` object. Other spatial data like a CRS and the bounding box are included in `SpatialLines` objects.
+
+```{r, eval=FALSE}
+getClass('line')
+getClass('lines')
+getClass('SpatialLines')
+
+```
+
+```{r, eval=FALSE}
+library('maps')
+library('maptools')
+oz <- map('world', 'Australia', plot=FALSE)
+oz_crs <- CRS('+proj=longlat +ellps=WGS84')
+oz <- map2SpatialLines(oz, proj4string=oz_crs)
+str(oz, max.level=2)
+```
+
+A common way of accessing (and if you're game, manipulating) `sp` objects is via the `list` style functions `sapply` or `lapply`.
+
+For example to find the length of the Lines slot, or how many `Line` objects it contains we can use the following
+
+```{r, eval=FALSE}
+len <- sapply(slot(oz, 'lines'), function(x) length(slot(x, 'Lines')))
+```
+
+Lets plot it for funsies. See if you can do it. Hint: just use the `plot()` function.
+
+
+
+
+#### 5. SpatialPolygons
+
+![](images/spatial_polygons_class_diagram.jpg)
+
+
+Lets use the area around Auckland as an example of working with polygon data.
+
+```{r, eval=FALSE}
+auc_crs <- CRS('+proj=longlat +ellps=WGS84')
+auc_shore <- MapGen2SL('Data/auckland_mapgen.dat', auc_crs)
+summary(auc_shore)
+```
+
+
+
+
+Lets have a closer look at the Auckland lines data and see if any of the lines *join* up. i.e Do the begining and end coordinates match.
+
+First lets just check if all the `lines` objects have only one `line` in them.
+
+```{r, eval=FALSE}
+nz_lines <- slot(auc_shore, 'lines')
+table(sapply(nz_lines, function(x) length(slot(x, 'lines'))))
+```
+
+So all the lines `objects` in the Auckland dataset consists of only one line. That makes things easier. Let see how many have beginning and end coordinates that match. Don't worry if you don't follow this code.
+
+
+
+This is a bit in-depth and you really wouldn't do this in real life, but lets construct some polygon data from our New Zealand lines data.
+
+```{r, eval=FALSE}
+auc_islands <- sapply(nz_lines, function(x){
+	crds <- slot(slot(x, 'Lines')[[1]], 'coords')
+	identical(crds[1,], crds[nrow(crds),])
+})
+
+table(auc_islands)
+```
+
+
+So we have a bunch of lines that are essentially islands. These can be made into proper polygons.
+
+First look at the structure of the hierarchical nature of polygons. They're much the same as `SpatialLines`.
+
+```{r, eval=FALSE}
+getClass("Polygon")
+getClass("Polygons")
+getClass("SpatialPolygons")
+```
+
+If we take only those `lines` in the Auckland data set that are closed lines we get
+
+```{r, eval=FALSE}
+auc_shore <- auc_shore[auc_islands]
+list_of_lines <- slot(auc_shore, 'lines')
+
+
+islands_sp <- SpatialPolygons(lapply(list_of_lines, function(x) {
+    Polygons(list(Polygon(slot(slot(x, "Lines")[[1]], "coords"))),
+      ID=slot(x, "ID"))
+  }), proj4string=CRS("+proj=longlat +ellps=WGS84"))
+
+summary(islands_sp)
+getClass('SpatialPolygons')
+slot(islands_sp, "plotOrder")
+
+```
+
+
+The key points know for Polygon data (and indeed for most Spatial data in R) is:
+
+1. *data*: This holds the data.frame
+2. *polygons*: This holds the coordinates of the polygons
+3. *plotOrder*: The order that the coordinates should be drawn
+4. *bbox*: The coordinates of the bounding box (edges of the shape file)
+5. *proj4string*: A character string describing the projection system
+
+##Visualising Spatial Data
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/X9UtUzHDn4c" frameborder="0" allowfullscreen></iframe>
+
+
+
+####Let's start basic.
+
+
+```{r, eval=FALSE}
+##basic intro
+data(meuse)
+str(meuse)
+coordinates(meuse) <- c('x', 'y') 
+str(meuse)
+plot(meuse)
+
+data(meuse.riv)
+plot(meuse.riv)
+
+meuse_lst <-list(Polygons(list(Polygon(meuse.riv)), "meuse.riv"))
+meuse_sp <- SpatialPolygons(meuse_lst)
+
+
+plot(meuse_sp, axes=F)
+plot(meuse, add=T, pch=16, cex=0.5)
+
+````
+Try adding axes by using the `axes=T` argument.
+
+Note that R has reserved the space that would have been taken up by the axes, even though they aren't plotted. Using the `par` command we can change many graphical parameters. It's good practice to save the `default` par arguments.
+
+```{r, eval=FALSE}
+##par arguements
+oldpar = par(no.readonly = TRUE)
+layout(matrix(c(1,2),1,2))
+plot(meuse, axes = TRUE, cex = 0.6)
+title("Sample locations")
+
+par(mar=c(0,0,0,0)+.1)
+plot(meuse, axes = FALSE, cex = 0.6)
+box()
+par(oldpar)
+```
+
+```{r,eval=FALSE}
+ wrld <- map("world", interior=FALSE, xlim=c(-179,179), 
+    ylim=c(-89,89), plot=FALSE)
+ wrld_p <- pruneMap(wrld, xlim=c(-179,179))
+ llCRS <- CRS("+proj=longlat +ellps=WGS84")
+ wrld_sp <- map2SpatialLines(wrld_p, proj4string=llCRS)
+ prj_new <- CRS("+proj=moll")
+ library(rgdal)
+ wrld_proj <- spTransform(wrld_sp, prj_new)
+ wrld_grd <- gridlines(wrld_sp, easts=c(-179,seq(-150,150,50), 179.5),              
+   norths=seq(-75,75,15), ndiscr=100)
+ wrld_grd_proj <- spTransform(wrld_grd, prj_new)
+ at_sp <- gridat(wrld_sp, easts=0, norths=seq(-75,75,15), offset=0.3)
+ at_proj <- spTransform(at_sp, prj_new)
+ plot(wrld_proj, col="grey60")
+ plot(wrld_grd_proj, add=TRUE, lty=3, col="grey70")
+ text(coordinates(at_proj), pos=at_proj$pos, offset=at_proj$offset,                 
+   labels=parse(text=as.character(at_proj$labels)), cex=0.6)
+
+```
+
+
+
+
+
+
+
+##Some common spatial manipulation
+
+
+
+## Working with Rasters
+
+### Let's get set up first
+
+Check if you can see the data - your working directory should be this file's location, and your data should be in Data/
+
+```{r, eval=FALSE}
+file.exists("Data/Cairns_Mangroves_30m.tif")
+file.exists("Data/SST_feb_2013.img")
+file.exists("Data/SST_feb_mean.img")
+```
+
+You should also have a folder Output/ for when we export results
+
+Install the packages we're going to need - raster for raster objects, dismo is SDM, rgdal to read and write various spatial data
+
+```{r, eval=FALSE}
+install.packages(c('raster', 'dismo','rgdal', 'gstat'))
+```
+
+Check that you can load them
+
+```{r, eval=FALSE}
+library(raster)
+library(dismo)
+library(rgdal)
+```
+
+
+### What is a raster?
+Now we're ready to go, but firstly, what is a raster? Well, simply, it is a grid of coordinates for which we can define a value at certain coordinate locations, and we display the corresponding grid elements according to those values. The raster data is essentially a matrix, but a raster is special in that we define what shape and how big each grid element is, and usually where the grid should sit in some known space (i.e. a geographic projected coordinate system).
+
+![Raster Graphics](Rgb-raster-image.png)
+
+### Understanding Raster Data
+
+Make a raster object, and query it
+
+```{r, eval=FALSE}
+x <- raster(ncol = 10, nrow = 10) # let's make a small raster
+nrow(x) # number of pixels
+ncol(x) # number of pixels
+ncell(x) # total number of pixels 
+plot(x) # doesn't plot because the raster is empty
+hasValues(x) # can check whether your raster has data
+values(x) <- 1 # give the raster a pixel value - in this case 1
+plot(x) # entire raster has a pixel value of 1 
+```
+
+Make a random number raster so we can see what's happening a little easier
+
+```{r, eval=FALSE}
+values(x) <- runif(ncell(x)) # each pixel is assigned a random number
+plot(x) # raster now has pixels with random numbers
+values(x) <- runif(ncell(x))
+plot(x)
+x[1,1] # we can query rasters (and subset the maaxtrix values) using standard R indexing
+x[1,]
+x[,1]
+```
+
+Use this to interactively query the raster - press esc to exit
+
+```{r, eval=FALSE}
+click(x)
+```
+
+What's special about a raster object?
+
+```{r, eval=FALSE}
+str(x) # note the CRS and extent, plus plenty of other slots
+crs(x) # check what coordinate system it is in, the default in the PROJ.4 format
+xmax(x) # check extent
+xmin(x)
+ymax(x)
+ymin(x)
+extent(x) # easier to use extent
+res(x)  # resolution
+xres(x) # just pixel width
+yres(x) # just pixel height
+```
+
+#### Excercises
+* make a raster with a smiley face
+* extract some vector and matrix data from the raster
+* subset the raster into a smaller chunk (tricker - see ```?"raster-package"```)
+
+
+### Working with real raster data
+
+Import the Cairns mangrove data and have a look at it
+
+```{r, eval=FALSE}
+mangrove <- raster("Data/Cairns_Mangroves_30m.tif") 
+crs(mangrove) # get projection
+plot(mangrove, col = topo.colors("2")) # note two pixel values, 0 (not mangrove) and 1 (mangrove)
+NAvalue(mangrove) <- 0 # make a single binary dataset with mangroves having a raster value 1
+plot(mangrove, col = "mediumseagreen")
+```
+
+The legend is a little odd - we can change to a categorical legend by doign this - but we'll stick to the default continous bar generally so as to reduce clutter in the code
+
+```{r, eval=FALSE}
+cols <- c("white","red")
+plot(mangrove, col=cols, legend=F)
+legend(x='bottomleft', legend=c("no mangrove", "mangrove"), fill=cols)
+```
+
+Simple processing
+
+```{r, eval=FALSE}
+agg.mangrove <- aggregate(mangrove, fact=10) # aggregate/resample cells (10 times bigger)
+
+par(mfrow=c(2,2))
+plot(mangrove, col = "mediumseagreen")
+plot(agg.mangrove, col = "firebrick")
+plot(agg.mangrove, col = "firebrick")
+plot(mangrove, col = "mediumseagreen", add=TRUE) # add information to current plot
+```
+
+Create a simple buffer
+
+```{r eval=FALSE}
+buf.mangrove <- buffer(agg.mangrove, width=1000) # add a buffer
+par(mfrow=c(1,1))
+plot(buf.mangrove, col = "peachpuff")
+plot(mangrove, col = "mediumseagreen", add = T) # note add= argument
+```
+
+Convert raster to point data, and then import point data as raster
+
+```{r, eval=FALSE}
+pts.mangrove <- rasterToPoints(mangrove)
+str(pts.mangrove)
+
+par(mfrow=c(2,2))
+plot(mangrove)
+plot(rasterFromXYZ(pts.mangrove)) # huh?
+
+NAvalue(mangrove) <- -999
+pts.mangrove <- rasterToPoints(mangrove)
+plot(rasterFromXYZ(pts.mangrove))
+
+NAvalue(mangrove) <- 0 # set it back to 0
+par(mfrow=c(1,1))
+```
+
+Export your data - lets try the aggregated raster
+
+```{r, eval=FALSE}
+KML(agg.mangrove, "Output/agg.mangrove.kml", overwrite = TRUE)
+writeRaster(agg.mangrove, "Output/agg.mangrove.tif", format = "GTiff")
+```
+
+Hang on, what about multiband rasters? The raster package handles them in the same way, just the ```nbands()``` attribute is >1 - think about an array instead of a matrix
+
+```{r, eval=FALSE}
+multiband <- raster("Data/multiband.tif")
+nbands(multiband)
+nrow(multiband) 
+ncol(multiband) 
+ncell(multiband) 
+```
+
+What about making our own multiband raster?
+
+```{r, eval=FALSE}
+for (i in 1:4) { assign(x=paste0("band",i), value=raster(ncol=10,nrow=10))}
+values(band1) <- runif(100); values(band2) <- runif(100); values(band3) <- runif(100); values(band4) <- runif(100)
+multiband.stack <- stack(list(band1,band2,band3,band4))
+nlayers(multiband.stack)
+plot(multiband.stack)
+```
+
+Plotting an RGB image?
+
+```{r, eval=FALSE}
+plotRGB(multiband.stack, r=1, g=2, b=3)
+range(multiband.stack)
+plotRGB(multiband.stack, r=1, g=2, b=3, scale=1) # let it know what the max value is for display
+plotRGB(multiband.stack, r=3, g=2, b=1, scale=1)
+plotRGB(multiband.stack, r=2, g=3, b=4, scale=1)
+```
+
+Other handy processing functions
+
+```{r, eval=FALSE}
+?crop
+?merge
+?trim
+?interpolate
+?reclassify
+?rasterToPolygons
+```
+
+Some handy analysis functions
+
+```{r, eval=FALSE}
+?zonal # zonal statistics
+?focal # moving windows
+?calc # raster calculator
+?distance # distance calculations
+?sampleRandom
+?sampleRegular
+?sampleStratified
+```
+
+We won't go into detail on coordinate and projection systems today, but *very* briefly, remembering ```CRS()``` objects from the earlier sessions
+
+```{r, eval=FALSE}
+crs(mangrove)
+proj4string(mangrove)
+
+latlong <- "+init=epsg:4326"
+CRS(latlong)
+eastnorth <- "+init=epsg:3857"
+CRS(eastnorth)
+
+latlongs.mangrove <- rasterToPoints(mangrove, spatial=T)
+latlongs.mangrove
+projected.pts.mangrove <- spTransform(latlongs.mangrove, CRS(eastnorth))
+projected.pts.mangrove
+```
+
+
+#### Excercises
+
+```{r, eval=FALSE, echo=FALSE}
+# this is just the code for how I made the tir subset - not needed for students
+tir.orig = raster("Data/LC80910802013275LGN00_TIR.jpg")
+ext = extent(tir.orig)
+centx = mean(c(ext[1],ext[2]))
+centy = mean(c(ext[3],ext[4]))
+new.ext = c(centx-10000,centx+10000,centy-10000,centy+10000)
+tir = crop(tir.orig, new.ext)
+writeRaster(x = tir, filename = "Landsat_TIR.tif", format = "GTiff")
+```
+
+* import the raster "Landsat_TIR.tif" - it's a TIR (thermal infrared) image from the Landsat 8 satellite captured over a cropping area
+* suppose we modelled the TIR values via linear regression to calculate the real on ground temperature, and beta0 was 0.5 and beta1 was 0.1 (i.e. y = 0.1x + 0.5) - make a map of temperature (hint: ```?calc```, and you'll need to write a function)
+* give the plot a title and axis labels, and colours that make sense for temperature
+* make a matching raster (in extent and number of pixels, for the easiest solution) with zone codes (for each pixel), then calulate the mean/sd temperature in those zones (hint: ```?values``` and ```?zonal```)
+
+```{r, eval=FALSE, echo=FALSE}
+tir <- raster("Data/Landsat_TIR.tif")
+temp <- function(x) {0.1*x + 0.5}
+tir.temp <- calc(tir, fun = temp)
+plot(tir.temp)
+plot(tir.temp, col=rev(heat.colors(10)), legend.args=list(text='Temperature (degC)', side=4, line=2.5),
+     main="Temperature dirived from Landsat TIR band", xlab="Easting", ylab="Northing")
+
+temp.zones <- tir.temp
+values(temp.zones) <- rep(1:ncol(temp.zones), length.out=ncell(temp.zones))
+zonal.mean.temps <- zonal(x=tir.temp, z=temp.zones, fun='mean')
+zonal.sd.temps <- zonal(x=tir.temp, z=temp.zones, fun='sd')
+```
+
+
+### Extending raster analyses
+
+Now let's take a bit of a whirlwind tour of the types of analyses we can do, and hopefully discover a bit deeper understanding of raster analysis in R.
+
+Load up some SST data - Feb 2013 for the globe (as an aside, check this link for more great ocean global data sets: http://oceancolor.gsfc.nasa.gov/cms/)
+
+```{r, eval=FALSE}
+sst.feb <- raster("Data/SST_feb_2013.img")
+plot(sst.feb)
+```
+
+Crop it to the pacific so we can compare our mangrove data
+
+```{r, eval=FALSE}
+pacific.extent <- extent(mangrove) + 80 # take advantage of the way R handles vector arithmatic!
+pacific.extent # check it
+sst.feb.crop <- crop(sst.feb, pacific.extent) # crop to the pacific
+plot (sst.feb.crop)
+```
+
+Load up the long term mean SST data for Feb
+
+```{r, eval=FALSE}
+sst.feb.mn <- raster("Data/SST_feb_mean.img")
+plot(sst.feb.mn)
+sst.mn.crop <- crop(sst.feb.mn, pacific.extent)
+plot (sst.mn.crop)
+```
+
+Now let's make an SST anomoly map
+
+```{r, eval=FALSE}
+sst.anomaly <- sst.feb.crop - sst.mn.crop # R + {raster} matrix arithmatic
+plot (sst.anomaly) # plot the anomaly map
+plot(sst.anomaly, col = topo.colors("100")) # different colours
+plot(sst.anomaly, col = rev(heat.colors("100"))) # heat colours
+contour(sst.anomaly, add = T) # add contours
+```
+
+Query single values,
+
+```{r, eval=FALSE}
+minValue(sst.anomaly) # coldest pixel
+maxValue(sst.anomaly) # warmest pixel
+plot(sst.anomaly==maxValue(sst.anomaly))
+```
+
+or plots/stats for the entire image,
+
+```{r, eval=FALSE}
+plot(sst.anomaly > 1)
+hist(sst.anomaly, main = "February SST Anomaly - Pacific", xlab = "sst anomaly")
+```
+
+or let's be a litle more tricky!
+
+```{r, eval=FALSE}
+max.anom <- which.max(sst.anomaly)
+max.xy <- xyFromCell(sst.anomaly, max.anom)
+plot(sst.anomaly, col = rev(heat.colors("100")))
+points(max.xy, pch=8, cex=2)
+```
+
+Sampling points conditionally? Sure. We'll see a better wrapper for this further down though.
+
+```{r, eval=FALSE}
+xy <- xyFromCell(sst.anomaly,sample(1:ncell(sst.anomaly), 20)) # 20 random points
+points(xy)
+extract(sst.feb, xy)
+?getValues # check this out too
+```
+
+Re-capping writing back to disk
+
+```{r, eval=FALSE}
+# writing rasters
+writeRaster(sst.anomaly, "Output/sst.anomaly.tif", format = "GTiff")
+KML(sst.anomaly, "Output/sst.anomaly.kml")
+save(sst.anomaly, file="Output/sst.anomaly.feb.RData")
+save(sst.feb.mn, file="Output/sst.feb.mn.RData") # check the file size, huh?
+```
+
+What's going on with those last two ```{r, eval=FALSE} save()``` commands? Something else to understand about the way the ```{r, eval=FALSE} raster``` package handles raster files is that for larger rasters, the whole file is not stored in memory, rather it is just a pointer to the file. You can test whether or not it is
+
+```{r, eval=FALSE}
+inMemory(sst.feb.mn) # R will only access file  when needed.
+inMemory(sst.anomaly) # it's in memory. 
+```
+
+We saw ```stack()``` earlier, and we can use it for multi-band imagery, but also to stack up different information sources. ```brick()``` works in the same way, except that it is designed for smaller objects, and a RasterBrick can only point to one file, opposed to a RasterStack, which can point to multiple files.
+
+```{r, eval=FALSE}
+sst.stack <- stack(sst.mn.crop, sst.feb.crop, sst.anomaly)
+plot(sst.stack)
+nlayers(sst.stack)
+plot(sst.stack,2)
+names(sst.stack)[3] <- "SST_anomaly"
+```
+
+
+### Modelling and interpolation
+
+Now let's look at quick example of what we can do with rasters in context of species distribution modelling and spatial modelling. First lets extract some random points - make sure you've run ```library(dismo)```
+
+```{r, eval=FALSE}
+rpoints.sst <- randomPoints(sst.stack,500) #?randomPoints for more options
+plot(sst.stack,2)
+points(rpoints.sst, pch = 16, cex = 0.7)
+sst.samp <- extract(sst.stack, rpoints.sst)  # extract values through stack this time
+str(sst.samp)
+sst.samp <- data.frame(sst.samp)
+plot(sst.samp$SST_anomaly ~ sst.samp$SST_feb_2013)
+```
+
+What if we had some real biological data at those points? Well, let's make some up, and then fit a model to it
+
+```{r, eval=FALSE}
+sst.samp$shark.abund <- rpois(n=nrow(sst.samp), lambda=round(sst.samp$SST_feb_2013))
+plot(sst.samp$shark.abund ~ sst.samp$SST_feb_2013)
+shark.glm <- glm(shark.abund ~ SST_feb_2013 + SST_anomaly, 
+                 data=sst.samp, family="poisson")
+summary(shark.glm)
+```
+
+We would usually use ```predict()``` on a model fit object, and we can use it similarly for predicting out to raster data
+
+```{r, eval=FALSE}
+predict(shark.glm, type="response")
+shark.predict <- predict(sst.stack, shark.glm, type='response')
+plot(shark.predict, col=rev(rainbow(n=10, start=0, end=0.3)), main="Shark abundance as a function of SST")
+```
+
+What if we just had the physical data at some points, and wanted to make those into a geographically weighted SST map? We'll use ```library(gstat)``` to try an IDW (inverse distance weighted) interpolation
+
+```{r, eval=FALSE}
+plot(sst.feb)
+rpoints.sst.feb <- randomPoints(sst.feb, 500)
+points(rpoints.sst.feb)
+rpoints.sst.feb <- data.frame(rpoints.sst.feb, extract(sst.feb, rpoints.sst.feb))
+names(rpoints.sst.feb)[3] = "SST"
+# fit the idw model
+sst.idw.fit <- gstat(id="SST", formula=SST~1, locations=~x+y, data=rpoints.sst.feb, 
+                 nmax=5, set=list(idp=1))
+sst.idw <- interpolate(sst.feb, sst.idw.fit)
+par(mfrow=c(1,2))
+plot(sst.feb); plot(sst.idw) # ahh!
+sst.idw <- mask(sst.idw, sst.feb)
+plot(sst.feb); plot(sst.idw)
+```
+
+Let's have a go at ordinary kriging (ignoring assuptions about Gaussian repsosne data)
+
+```{r, eval=FALSE}
+# first some package specific projection stuff
+coordinates(rpoints.sst.feb) <- ~x+y
+proj4string(rpoints.sst.feb) <- proj4string(sst.feb)
+# now the kriging
+sst.vario <- variogram(object=SST~1, data=rpoints.sst.feb) # could log(y) is SST wasn't negative
+sst.vario.fit <- fit.variogram(sst.vario, vgm(psill=0.3, model="Gau", range=100)) #?vgm
+# (Exp)ponential, (Sph)rical, (Gau)ssian, (Mat)ern, (Spl)ine, (Lin)ear etc.
+sst.ordkirg.fit <- gstat(id="SST", formula=SST~1, model=sst.vario.fit, data=rpoints.sst.feb)
+sst.ordkrig <- interpolate(sst.feb, sst.ordkirg.fit)
+sst.ordkrig <- mask(sst.ordkrig, sst.feb)
+plot(sst.feb); plot(sst.ordkrig)
+```
+
+
+#### Excercises (if we have time)
+* try generating some stats (values or plots) for SST anomaly for different regions, either across the globe or across Australia
+* try come band math, or some conditional statements using multiple rasters or a RasterStack
+* create another SDM scenario - either using downloaded data, or totally simulated data
+* do some more interpolations, varying the number of points used, and see how that effects your interpollated product
+* try and figure our co-kriging, or interpolation with added covariate data (hint: there's an example in ```?interpolate```)
+
+
+### Some further cool things...
+
+Let's get some climate data using the raster package
+
+```{r, eval=FALSE}
+par(mfrow=c(1,1))
+rain <- getData('worldclim', var="prec", res=10, lon=5, lat=45) # this will d/l data to getwd()
+plot(rain)
+nlayers(rain)
+rpoints.rain <- randomPoints(rain,500)  # through the stack
+plot(rain, 1) # plot january rainfall
+points(rpoints.rain, pch=16, cex=0.7)
+samp.rain <- extract(rain, rpoints.rain) 
+head(samp.rain)
+```
+
+Get maps using dismo
+
+```{r, eval=FALSE}
+install.packages("XML"); library(XML)
+Aus <- gmap("Australia") # get google maps normal
+plot(Aus)
+AusSat <- gmap("Australia", type="satellite") # get google maps satellite image
+plot(AusSat)
+```
+
+Get simple maps
+
+```{r, eval=FALSE}
+install.packages("maps"); library(maps)
+map(database = "world", col = "grey")
+```
+
+A couple other handy packages
+
+```{r, eval=FALSE}
+library(rasterVis)
+library(maptools)
+```
+
+
+
+
+
+
+
+
+

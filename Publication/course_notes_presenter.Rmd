@@ -1,0 +1,41 @@
+##Spatial Data is everywhere
+
+Why R
+Free
+How analysis components can be easily store, replayed, modified.
+Develop and exchange ideas and approaches
+Tried and tested methods for spatial data
+Repeatably shown to be stable and be make mission critical components of project. In use at Google, NASA, Amazon, the major universities.
+10 years ago, spatial data in r was treated ad hoc. Not good. Coordinates treated as any other number.
+
+Group of R developers created the R package sp with new data classes and methods for spatial data.sp provides support for points, lines, polygons, and grids
+
+open source a viable alternative to closed source
+
+Type of Spatial Data Any data that has a spatial reference, Coordinate values and a system of reference for those coordinates. EG. Volcanoes on the earth, in Lattitude and Longitude in decimal degrees from the Greenwich Prime Meridian, using the WGS84 representation of the earth.
+
+An attribute is data associated with that point that is non spatial. Think time since last volcano eruption
+
+Implicit attribute- every dot is a volcano peak.
+
+SPATIAL DATA is represented in DATA MODELS Points Lines Polygons Grid
+
+Points, Lines, Polygons are VECTORS representations. Grids are RASTER representations, i.e. they represent a continuous surface on the earths surface by means of a regular tessellation.
+
+ALL representations in these models have positional information- where is it? Some models also have attribute data- what is it?
+
+clean transform analysis visualization
+
+suite of platforms R, QGIS, ARC, even other languages (Processing, Java, Python)
+
+Spatial Data Visualisation data visualisation
+
+The greatest value of a picture is when it forces us to notice what we don’t originally see
+
+William Playfair- 1786- The first bar chart | Time Series line chart | Pie Chart Florence Nightingale | First to use graph for policy 1858 Diagram of Causes of mortiltiy of the Army in the east. Polar Area Diagram, Nightingale Rose Diagram. Queen vic appointed a sanitation commissioner. removed dead animals, rotten floors etc. Mortality dropped 52% to 20%. The graph that saved more lives than any others. Distinction- Info Visualistaion vs Data Visualistiona 1. Communication of info already known for most people |Info Visualisation 2. researchers find patterns in first place- Cholera outbreak 1854 Servo district London. Cholera passed by bad air, but John Snow plotted each case of cholera and found an epicentre at Public Water Pump. Removed pump handle and cholera declined. | Data Visualisation
+
+the new world order ability to automate scale of data |millions or billions of cases NIH Thousand Genomes Project 200TB CalTech 200M stars- 20B data points Google- Linguistics- 1 trillion words Extraordinary demands- methods much smaller datasets may not be ideal
+
+API OpenLayers Mapnik OpenStreetMap
+
+Spatial Data Analysis
