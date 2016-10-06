@@ -26,8 +26,7 @@ This exercise is from James Cheshire, a very cool analyst from University Colleg
 This graphic uses ggplot (which we'll get to later...) to simply plot the routes that south England residents too and from work each day.
 
 
-
-```r
+```{r, eval=FALSE}
 ###Mapping Journeys to Work in the UK
 library(plyr)
 library(ggplot2)
@@ -99,8 +98,7 @@ GitHub is a platform for hosting and collaborating on projects. You don’t have
 Remember that:
 
 
-
-```r
+```{r, eval=FALSE}
 x <- sum(c(2, 5, 7, 1))
 x
 ```
@@ -112,8 +110,7 @@ x
 `x` is an object in R. It has a class, which represents the way the data in x is stored.
 
 
-
-```r
+```{r, eval=FALSE}
 class(x)
 ```
 
@@ -129,8 +126,7 @@ When R was first being created, there were no real functions. They were introduc
 Think back to the classic data set shipped with R, `mtcars'.
 
 
-
-```r
+```{r, eval=FALSE}
 data(mtcars)
 class(mtcars)
 ```
@@ -139,8 +135,7 @@ class(mtcars)
 ## [1] "data.frame"
 ```
 
-
-```r
+```{r, eval=FALSE}
 typeof(mtcars)
 ```
 
@@ -148,8 +143,7 @@ typeof(mtcars)
 ## [1] "list"
 ```
 
-
-```r
+```{r, eval=FALSE}
 names(mtcars)
 ```
 
@@ -173,14 +167,12 @@ Different spatial classes in R *inherit* their attributes from other classes.
 ![](Publication/images/spatial_class_box.jpg)
 
 
-
-```r
+```{r, eval=FALSE}
 library(sp)
 ```
 
 
-
-```r
+```{r, eval=FALSE}
 getClass("Spatial")
 ```
 
@@ -209,51 +201,28 @@ getClass("Spatial")
 ```
 
 
-
-```r
+```{r}
 m <- matrix(c(0, 0, 1, 1), ncol = 2, dimnames = list(NULL, c("min", "max")))
 print(m)
 ```
 
 ```
-##      min max
-## [1,]   0   1
-## [2,]   0   1
-```
 
 ```
 
-```
-
-
-```r
+```{r}
 crs <- CRS(projargs = as.character(NA))
 print(crs)
 ```
 
 ```
-## CRS arguments: NA
-```
 
 ```
 
-```
-
-
-```r
+```{r}
 S <- Spatial(bbox = m, proj4string = crs)
 S
-```
 
-```
-## An object of class "Spatial"
-## Slot "bbox":
-##      min max
-## [1,]   0   1
-## [2,]   0   1
-## 
-## Slot "proj4string":
-## CRS arguments: NA
 ```
 
 ```
@@ -277,8 +246,7 @@ The data below is from the OpenFlights project. OpenFlights is a tool that lets 
 They have put their data (and code) on a public GitHub repo. Download and load into R directly.
 
 
-
-```r
+```{r}
 library(RCurl)
 URL <- "https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat"
 x <- getURL(URL)
@@ -287,36 +255,17 @@ airports <- read.csv(textConnection(x), header = F)
 ```
 
 
-
-```r
+```{r}
 colnames(airports) <- c("ID", "name", "city", "country", "IATA_FAA", "ICAO", "lat", "lon", "altitude", "timezone", "DST", 
     "TimeZone")
 head(airports)
-```
-
-```
-##   ID                       name         city          country IATA_FAA
-## 1  1                     Goroka       Goroka Papua New Guinea      GKA
-## 2  2                     Madang       Madang Papua New Guinea      MAG
-## 3  3                Mount Hagen  Mount Hagen Papua New Guinea      HGU
-## 4  4                     Nadzab       Nadzab Papua New Guinea      LAE
-## 5  5 Port Moresby Jacksons Intl Port Moresby Papua New Guinea      POM
-## 6  6                 Wewak Intl        Wewak Papua New Guinea      WWK
-##   ICAO       lat      lon altitude timezone DST             TimeZone
-## 1 AYGA -6.081689 145.3919     5282       10   U Pacific/Port_Moresby
-## 2 AYMD -5.207083 145.7887       20       10   U Pacific/Port_Moresby
-## 3 AYMH -5.826789 144.2959     5388       10   U Pacific/Port_Moresby
-## 4 AYNZ -6.569828 146.7262      239       10   U Pacific/Port_Moresby
-## 5 AYPY -9.443383 147.2200      146       10   U Pacific/Port_Moresby
-## 6 AYWK -3.583828 143.6692       19       10   U Pacific/Port_Moresby
 ```
 
 
 The only difference between the `Spatial` and `SpatialPoints` class is the addition of the `coords` *slot*.
 
 
-
-```r
+```{r, eval=FALSE}
 air_coords <- cbind(airports$lon, airports$lat)
 air_CRS <- CRS('+proj=longlat +ellps=WGS84')
 
@@ -334,15 +283,8 @@ Note that we did not specify a Bounding Box even though it is an integral compon
 
 
 
-
-```r
+```{r}
 bbox(airports_sp)
-```
-
-```
-##                min       max
-## coords.x1 -179.877 179.95100
-## coords.x2  -90.000  82.51778
 ```
 
 
@@ -355,27 +297,14 @@ All spatial objects have a generic method `proj4string`. This sets the coordinat
 Proj4 strings can be assigned and re-assigned. NOTE that re-assigning a CRS does does NOT transform it. Simply saying the proj=utm will not convert the coordinates from long/lat into UTM.
 
 
-
-```r
+```{r}
 proj4string(airports_sp) <- CRS(as.character(NA))
 summary(airports_sp)
 ```
 
-```
-## Object of class SpatialPoints
-## Coordinates:
-##                min       max
-## coords.x1 -179.877 179.95100
-## coords.x2  -90.000  82.51778
-## Is projected: NA 
-## proj4string : [NA]
-## Number of points: 8107
-```
 
 
-
-
-```r
+```{r}
 proj4string(airports_sp) <- air_CRS
 ```
 
@@ -384,35 +313,18 @@ proj4string(airports_sp) <- air_CRS
 Subsetting SpatialPoints can be accomplished in the same manner as most other subsetting in R - using logical vectors.
 
 
-
-```r
+```{r}
 airports_oz <- which(airports$country=='Australia')
 head(airports_oz)
 ```
 
-```
-## [1] 1928 2047 2101 2194 2214 2313
-```
 
 
-
-
-```r
+```{r}
 oz_coords <- coordinates(airports_sp)[airports_oz,]
 head(oz_coords)
 ```
-
-```
-##      coords.x1 coords.x2
-## [1,]   151.488  -32.7033
-## [2,]   149.611  -32.5625
-## [3,]   148.755  -20.2760
-## [4,]   150.832  -32.0372
-## [5,]   151.342  -32.7875
-## [6,]   128.307  -17.5453
-```
-
-```r
+```{r, eval=FALSE}
 plot(oz_coords)
 ```
 
@@ -421,20 +333,8 @@ plot(oz_coords)
 You can also use the subsetting methods directly on the SpatialPoints.
 
 
-
-```r
+```{r}
 summary(airports_sp[airports_oz,])
-```
-
-```
-## Object of class SpatialPoints
-## Coordinates:
-##                  min      max
-## coords.x1 -153.01667 159.0770
-## coords.x2  -42.83611  28.3835
-## Is projected: FALSE 
-## proj4string : [+proj=longlat +ellps=WGS84]
-## Number of points: 263
 ```
 
 
@@ -447,26 +347,8 @@ Often we need to associate attribute data to simple point locations. The `Spatia
 
 
 
-
-```r
+```{r}
 getClass('SpatialPointsDataFrame')
-```
-
-```
-## Class "SpatialPointsDataFrame" [package "sp"]
-## 
-## Slots:
-##                                                                   
-## Name:         data  coords.nrs      coords        bbox proj4string
-## Class:  data.frame     numeric      matrix      matrix         CRS
-## 
-## Extends: 
-## Class "SpatialPoints", directly
-## Class "Spatial", by class "SpatialPoints", distance 2
-## Class "SpatialPointsNULL", by class "SpatialPoints", distance 2
-## 
-## Known Subclasses: 
-## Class "SpatialPixelsDataFrame", directly, with explicit coerce
 ```
 
 So far we have downloaded a `data.frame`, where 2 columns were latitude and longitude, and constructed a simple SpatialPoints object from it. 
@@ -476,61 +358,15 @@ A `SpatialPointsDataFrame` simply connects the SpatialPoints with the rest of th
 A key consideration here is that the `row.names` of both the matrix of coordinates and the data need to match. 
 
 
-
-```r
+```{r}
 airports_spdf <- SpatialPointsDataFrame(coords=air_coords, data=airports, proj4string=air_CRS)
 summary(airports_spdf)
-```
-
-```
-## Object of class SpatialPointsDataFrame
-## Coordinates:
-##                min       max
-## coords.x1 -179.877 179.95100
-## coords.x2  -90.000  82.51778
-## Is projected: FALSE 
-## proj4string : [+proj=longlat +ellps=WGS84]
-## Number of points: 8107
-## Data attributes:
-##        ID                    name             city     
-##  Min.   :   1   North Sea      :  16   London   :  21  
-##  1st Qu.:2092   All Airports   :  10   New York :  13  
-##  Median :4257   Railway Station:   9   Hong Kong:  12  
-##  Mean   :4766   Train Station  :   8   Berlin   :  10  
-##  3rd Qu.:7508   Vilamendhoo    :   6   Paris    :  10  
-##  Max.   :9541   Bus            :   5   Chicago  :   9  
-##                 (Other)        :8053   (Other)  :8032  
-##           country        IATA_FAA        ICAO            lat         
-##  United States:1697          :2227   \\N    :1258   Min.   :-90.000  
-##  Canada       : 435   BFT    :   2          :  63   1st Qu.:  8.825  
-##  Germany      : 321   ZYA    :   2   EDDB   :   2   Median : 34.988  
-##  Australia    : 263   %u0    :   1   OIIE   :   2   Mean   : 26.818  
-##  Russia       : 249   04G    :   1   RPVM   :   2   3rd Qu.: 47.958  
-##  France       : 233   06A    :   1   UATE   :   2   Max.   : 82.518  
-##  (Other)      :4909   (Other):5873   (Other):6778                    
-##       lon              altitude          timezone        DST     
-##  Min.   :-179.877   Min.   :-1266.0   Min.   :-12.0000   A:2037  
-##  1st Qu.: -79.022   1st Qu.:   38.0   1st Qu.: -5.0000   E:1852  
-##  Median :   5.292   Median :  272.0   Median :  1.0000   N:1364  
-##  Mean   :  -3.922   Mean   :  933.4   Mean   :  0.1692   O: 214  
-##  3rd Qu.:  49.786   3rd Qu.: 1020.0   3rd Qu.:  4.0000   S: 391  
-##  Max.   : 179.951   Max.   :14472.0   Max.   : 13.0000   U:2195  
-##                                                          Z:  54  
-##                 TimeZone   
-##  America/New_York   : 628  
-##  America/Chicago    : 373  
-##  Europe/Berlin      : 319  
-##  America/Anchorage  : 258  
-##  Europe/Paris       : 232  
-##  America/Los_Angeles: 226  
-##  (Other)            :6071
 ```
 
 We can shorten this by simply joining a `SpatialPoints` objects with the data.
 
 
-
-```r
+```{r, eval=FALSE}
 airports_spdf <- SpatialPointsDataFrame(airports_sp, airports)
 ```
 
@@ -542,41 +378,19 @@ airports_spdf <- SpatialPointsDataFrame(airports_sp, airports)
 Lines are tricky. In the old `S` language they were simply represented by a series of numbers seperated by an `NA` that represented the end of the line. In R the most basic representation of a line is the `Line` object, essentially a matrix of 2-D coordinates. Many of these `Line` objects form the `Lines` slot of a `Lines` object. Other spatial data like a CRS and the bounding box are included in `SpatialLines` objects.
 
 
-
-```r
+```{r}
 getClass('SpatialLines')
 ```
 
-```
-## Class "SpatialLines" [package "sp"]
-## 
-## Slots:
-##                                           
-## Name:        lines        bbox proj4string
-## Class:        list      matrix         CRS
-## 
-## Extends: "Spatial", "SpatialLinesNULL"
-## 
-## Known Subclasses: "SpatialLinesDataFrame"
-```
 
-
-
-```r
+```{r,  fig.width=8, fig.height=6}
 library('maps')
 library('maptools')
 oz <- map('world', 'Australia', plot=FALSE)
 oz_crs <- CRS('+proj=longlat +ellps=WGS84')
 oz <- map2SpatialLines(oz, proj4string=oz_crs)
 str(oz, max.level=2)
-```
 
-```
-## Formal class 'SpatialLines' [package "sp"] with 3 slots
-##   ..@ lines      :List of 43
-##   ..@ bbox       : num [1:2, 1:2] 112.9 -54.7 159 -10.1
-##   .. ..- attr(*, "dimnames")=List of 2
-##   ..@ proj4string:Formal class 'CRS' [package "sp"] with 1 slot
 ```
 
 A common way of accessing (and if you're game, manipulating) `sp` objects is via the `list` style functions `sapply` or `lapply`.
@@ -584,21 +398,14 @@ A common way of accessing (and if you're game, manipulating) `sp` objects is via
 For example to find the length of the Lines slot, or how many `Line` objects it contains we can use the following
 
 
-
-```r
+```{r}
 len <- sapply(slot(oz, 'lines'), function(x) length(slot(x, 'Lines')))
 len
 ```
 
-```
-##  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-## [36] 1 1 1 1 1 1 1 1
-```
-
 Lets plot it for funsies. See if you can do it. Hint: just use the `plot()` function.
 
-
-```r
+```{r, eval=FALSE}
 plot(oz)
 ```
 
@@ -610,21 +417,10 @@ plot(oz)
 Lets use the area around Auckland as an example of working with polygon data.
 
 
-
-```r
+```{r}
 auc_crs <- CRS('+proj=longlat +ellps=WGS84')
 auc_shore <- MapGen2SL('Data/auckland_mapgen.dat', auc_crs)
 summary(auc_shore)
-```
-
-```
-## Object of class SpatialLines
-## Coordinates:
-##     min   max
-## x 174.2 175.3
-## y -37.5 -36.5
-## Is projected: FALSE 
-## proj4string : [+proj=longlat +ellps=WGS84]
 ```
 
 
@@ -635,16 +431,10 @@ Lets have a closer look at the Auckland lines data and see if any of the lines *
 First lets just check if all the `lines` objects have only one `line` in them.
 
 
-
-```r
+```{r}
 nz_lines <- slot(auc_shore, 'lines')
 sapply(nz_lines, function(x) length(slot(x, 'Lines')))
-```
 
-```
-##  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-## [36] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-## [71] 1 1 1 1 1 1 1 1 1 1
 ```
 
 So all the lines `objects` in the Auckland dataset consists of only one line. That makes things easier. Let see how many have beginning and end coordinates that match. Don't worry if you don't follow this code.
@@ -654,8 +444,7 @@ So all the lines `objects` in the Auckland dataset consists of only one line. Th
 This is a bit in-depth and you really wouldn't do this in real life, but lets construct some polygon data from our New Zealand lines data.
 
 
-
-```r
+```{r}
 auc_islands <- sapply(nz_lines, function(x){
 	crds <- slot(slot(x, 'Lines')[[1]], 'coords')
 	identical(crds[1,], crds[nrow(crds),])
@@ -664,69 +453,22 @@ auc_islands <- sapply(nz_lines, function(x){
 table(auc_islands)
 ```
 
-```
-## auc_islands
-## FALSE  TRUE 
-##    16    64
-```
-
 
 So we have a bunch of lines that are essentially islands. These can be made into proper polygons.
 
 First look at the structure of the hierarchical nature of polygons. They're much the same as `SpatialLines`.
 
 
-
-```r
+```{r}
 getClass("Polygon")
-```
-
-```
-## Class "Polygon" [package "sp"]
-## 
-## Slots:
-##                                               
-## Name:    labpt    area    hole ringDir  coords
-## Class: numeric numeric logical integer  matrix
-## 
-## Extends: "Line"
-```
-
-```r
 getClass("Polygons")
-```
-
-```
-## Class "Polygons" [package "sp"]
-## 
-## Slots:
-##                                                         
-## Name:   Polygons plotOrder     labpt        ID      area
-## Class:      list   integer   numeric character   numeric
-```
-
-```r
 getClass("SpatialPolygons")
-```
-
-```
-## Class "SpatialPolygons" [package "sp"]
-## 
-## Slots:
-##                                                       
-## Name:     polygons   plotOrder        bbox proj4string
-## Class:        list     integer      matrix         CRS
-## 
-## Extends: "Spatial", "SpatialPolygonsNULL"
-## 
-## Known Subclasses: "SpatialPolygonsDataFrame"
 ```
 
 If we take only those `lines` in the Auckland data set that are closed lines we get
 
 
-
-```r
+```{r}
 auc_shore <- auc_shore[auc_islands]
 list_of_lines <- slot(auc_shore, 'lines')
 
@@ -737,43 +479,8 @@ islands_sp <- SpatialPolygons(lapply(list_of_lines, function(x) {
   }), proj4string=CRS("+proj=longlat +ellps=WGS84"))
 
 summary(islands_sp)
-```
-
-```
-## Object of class SpatialPolygons
-## Coordinates:
-##         min       max
-## x 174.30297 175.22791
-## y -37.43877 -36.50033
-## Is projected: FALSE 
-## proj4string : [+proj=longlat +ellps=WGS84]
-```
-
-```r
 getClass('SpatialPolygons')
-```
-
-```
-## Class "SpatialPolygons" [package "sp"]
-## 
-## Slots:
-##                                                       
-## Name:     polygons   plotOrder        bbox proj4string
-## Class:        list     integer      matrix         CRS
-## 
-## Extends: "Spatial", "SpatialPolygonsNULL"
-## 
-## Known Subclasses: "SpatialPolygonsDataFrame"
-```
-
-```r
 slot(islands_sp, "plotOrder")
-```
-
-```
-##  [1] 45 54 37 28 38 27 12 11 59 53  5 25 26 46  7 55 17 34 30 16  6 43 14
-## [24] 40 32 19 61 42 15 50 21 18 62 23 22 29 24 44 13  2 36  9 63 58 56 64
-## [47] 52 39 51  1  8  3  4 20 47 35 41 48 60 31 49 57 10 33
 ```
 
 
@@ -795,285 +502,29 @@ The key points know for Polygon data (and indeed for most Spatial data in R) is:
 
 
 
-
-```r
+```{r}
 ##basic intro
 data(meuse)
 str(meuse)
-```
-
-```
-## 'data.frame':	155 obs. of  14 variables:
-##  $ x      : num  181072 181025 181165 181298 181307 ...
-##  $ y      : num  333611 333558 333537 333484 333330 ...
-##  $ cadmium: num  11.7 8.6 6.5 2.6 2.8 3 3.2 2.8 2.4 1.6 ...
-##  $ copper : num  85 81 68 81 48 61 31 29 37 24 ...
-##  $ lead   : num  299 277 199 116 117 137 132 150 133 80 ...
-##  $ zinc   : num  1022 1141 640 257 269 ...
-##  $ elev   : num  7.91 6.98 7.8 7.66 7.48 ...
-##  $ dist   : num  0.00136 0.01222 0.10303 0.19009 0.27709 ...
-##  $ om     : num  13.6 14 13 8 8.7 7.8 9.2 9.5 10.6 6.3 ...
-##  $ ffreq  : Factor w/ 3 levels "1","2","3": 1 1 1 1 1 1 1 1 1 1 ...
-##  $ soil   : Factor w/ 3 levels "1","2","3": 1 1 1 2 2 2 2 1 1 2 ...
-##  $ lime   : Factor w/ 2 levels "0","1": 2 2 2 1 1 1 1 1 1 1 ...
-##  $ landuse: Factor w/ 15 levels "Aa","Ab","Ag",..: 4 4 4 11 4 11 4 2 2 15 ...
-##  $ dist.m : num  50 30 150 270 380 470 240 120 240 420 ...
-```
-
-```r
 coordinates(meuse) <- c('x', 'y') 
 str(meuse)
 ```
-
-```
-## Formal class 'SpatialPointsDataFrame' [package "sp"] with 5 slots
-##   ..@ data       :'data.frame':	155 obs. of  12 variables:
-##   .. ..$ cadmium: num [1:155] 11.7 8.6 6.5 2.6 2.8 3 3.2 2.8 2.4 1.6 ...
-##   .. ..$ copper : num [1:155] 85 81 68 81 48 61 31 29 37 24 ...
-##   .. ..$ lead   : num [1:155] 299 277 199 116 117 137 132 150 133 80 ...
-##   .. ..$ zinc   : num [1:155] 1022 1141 640 257 269 ...
-##   .. ..$ elev   : num [1:155] 7.91 6.98 7.8 7.66 7.48 ...
-##   .. ..$ dist   : num [1:155] 0.00136 0.01222 0.10303 0.19009 0.27709 ...
-##   .. ..$ om     : num [1:155] 13.6 14 13 8 8.7 7.8 9.2 9.5 10.6 6.3 ...
-##   .. ..$ ffreq  : Factor w/ 3 levels "1","2","3": 1 1 1 1 1 1 1 1 1 1 ...
-##   .. ..$ soil   : Factor w/ 3 levels "1","2","3": 1 1 1 2 2 2 2 1 1 2 ...
-##   .. ..$ lime   : Factor w/ 2 levels "0","1": 2 2 2 1 1 1 1 1 1 1 ...
-##   .. ..$ landuse: Factor w/ 15 levels "Aa","Ab","Ag",..: 4 4 4 11 4 11 4 2 2 15 ...
-##   .. ..$ dist.m : num [1:155] 50 30 150 270 380 470 240 120 240 420 ...
-##   ..@ coords.nrs : int [1:2] 1 2
-##   ..@ coords     : num [1:155, 1:2] 181072 181025 181165 181298 181307 ...
-##   .. ..- attr(*, "dimnames")=List of 2
-##   .. .. ..$ : chr [1:155] "1" "2" "3" "4" ...
-##   .. .. ..$ : chr [1:2] "x" "y"
-##   ..@ bbox       : num [1:2, 1:2] 178605 329714 181390 333611
-##   .. ..- attr(*, "dimnames")=List of 2
-##   .. .. ..$ : chr [1:2] "x" "y"
-##   .. .. ..$ : chr [1:2] "min" "max"
-##   ..@ proj4string:Formal class 'CRS' [package "sp"] with 1 slot
-##   .. .. ..@ projargs: chr NA
-```
-
-```r
+```{r, fig.width=6, fig.heigt=6}
 plot(meuse)
-```
-
-![plot of chunk unnamed-chunk-35](figure/unnamed-chunk-35-1.png)
-
-```r
 data(meuse.riv)
 Polygon(meuse.riv)
-```
-
-```
-## An object of class "Polygon"
-## Slot "labpt":
-## [1] 180182.6 331122.5
-## 
-## Slot "area":
-## [1] 2122714
-## 
-## Slot "hole":
-## [1] FALSE
-## 
-## Slot "ringDir":
-## [1] 1
-## 
-## Slot "coords":
-##            [,1]     [,2]
-##   [1,] 182003.7 337678.6
-##   [2,] 182136.6 337569.6
-##   [3,] 182252.1 337413.6
-##   [4,] 182314.5 337284.7
-##   [5,] 182331.5 337122.3
-##   [6,] 182323.9 336986.2
-##   [7,] 182268.2 336832.6
-##   [8,] 182160.9 336655.2
-##   [9,] 181979.1 336429.5
-##  [10,] 181831.8 336190.0
-##  [11,] 181739.6 335986.8
-##  [12,] 181675.3 335763.7
-##  [13,] 181658.4 335634.2
-##  [14,] 181656.0 335462.9
-##  [15,] 181675.8 335298.4
-##  [16,] 181719.8 334886.7
-##  [17,] 181718.5 334648.8
-##  [18,] 181679.7 334431.2
-##  [19,] 181610.3 334246.2
-##  [20,] 181451.8 334036.9
-##  [21,] 181325.1 333902.8
-##  [22,] 181029.8 333659.8
-##  [23,] 180915.2 333552.3
-##  [24,] 180740.8 333269.0
-##  [25,] 180579.2 332791.5
-##  [26,] 180528.2 332688.4
-##  [27,] 180401.2 332495.6
-##  [28,] 180309.3 332403.3
-##  [29,] 180208.2 332320.8
-##  [30,] 179871.9 332233.2
-##  [31,] 179752.2 332167.2
-##  [32,] 179569.6 332020.7
-##  [33,] 179508.4 331895.7
-##  [34,] 179420.9 331549.2
-##  [35,] 179286.5 331321.7
-##  [36,] 179033.3 331056.8
-##  [37,] 178895.9 330931.0
-##  [38,] 178708.0 330721.2
-##  [39,] 178551.1 330484.9
-##  [40,] 178474.2 330268.2
-##  [41,] 178467.9 330173.2
-##  [42,] 178499.5 329972.1
-##  [43,] 178547.1 329872.1
-##  [44,] 178641.8 329757.9
-##  [45,] 178725.5 329694.9
-##  [46,] 178819.0 329641.1
-##  [47,] 178922.3 329613.7
-##  [48,] 179059.1 329601.6
-##  [49,] 179212.0 329615.7
-##  [50,] 179343.8 329665.4
-##  [51,] 179447.2 329719.2
-##  [52,] 179535.0 329783.1
-##  [53,] 179596.4 329852.6
-##  [54,] 179834.7 330110.0
-##  [55,] 179891.5 330197.1
-##  [56,] 180043.6 330284.2
-##  [57,] 180187.0 330301.9
-##  [58,] 180279.0 330298.9
-##  [59,] 180404.6 330253.6
-##  [60,] 180713.7 330019.7
-##  [61,] 180799.1 329941.7
-##  [62,] 180947.4 329805.2
-##  [63,] 180982.3 329755.4
-##  [64,] 181065.6 329581.2
-##  [65,] 181114.0 329411.3
-##  [66,] 181124.0 329230.0
-##  [67,] 181098.1 329116.5
-##  [68,] 181008.6 329001.9
-##  [69,] 180859.0 328892.4
-##  [70,] 180653.9 328835.6
-##  [71,] 180493.1 328774.1
-##  [72,] 180314.2 328643.3
-##  [73,] 180263.8 328559.2
-##  [74,] 180186.3 328323.5
-##  [75,] 180167.3 328130.4
-##  [76,] 180120.6 327963.6
-##  [77,] 179890.0 327316.9
-##  [78,] 179803.4 327192.7
-##  [79,] 179546.9 326921.5
-##  [80,] 179397.3 326815.2
-##  [81,] 179233.7 326566.4
-##  [82,] 179102.6 326345.2
-##  [83,] 178983.9 326114.0
-##  [84,] 178916.6 325897.1
-##  [85,] 178868.8 325698.5
-##  [86,] 178766.0 325759.0
-##  [87,] 178873.6 326139.8
-##  [88,] 178983.0 326377.6
-##  [89,] 179137.2 326629.8
-##  [90,] 179282.3 326818.2
-##  [91,] 179556.9 327130.8
-##  [92,] 179651.5 327210.2
-##  [93,] 179823.9 327473.8
-##  [94,] 180000.0 327954.8
-##  [95,] 180064.8 328200.4
-##  [96,] 180087.1 328495.0
-##  [97,] 180111.8 328573.6
-##  [98,] 180178.4 328666.7
-##  [99,] 180264.0 328759.2
-## [100,] 180448.6 328870.8
-## [101,] 180812.8 329033.7
-## [102,] 180903.7 329094.2
-## [103,] 180970.5 329196.9
-## [104,] 180977.8 329323.7
-## [105,] 180965.9 329444.7
-## [106,] 180940.1 329531.3
-## [107,] 180901.6 329618.3
-## [108,] 180773.4 329788.8
-## [109,] 180671.6 329855.8
-## [110,] 180569.8 329922.8
-## [111,] 180386.6 330089.0
-## [112,] 180274.3 330153.0
-## [113,] 180189.1 330168.4
-## [114,] 180096.3 330149.2
-## [115,] 180000.0 330089.4
-## [116,] 179916.9 330002.5
-## [117,] 179836.6 329878.1
-## [118,] 179691.9 329724.0
-## [119,] 179617.3 329665.7
-## [120,] 179512.7 329583.7
-## [121,] 179307.2 329514.1
-## [122,] 179239.9 329507.2
-## [123,] 179058.6 329491.5
-## [124,] 178843.6 329516.4
-## [125,] 178649.3 329598.9
-## [126,] 178519.4 329704.7
-## [127,] 178400.1 329845.1
-## [128,] 178328.1 329974.5
-## [129,] 178304.0 330111.8
-## [130,] 178315.0 330257.5
-## [131,] 178354.5 330396.0
-## [132,] 178413.6 330552.8
-## [133,] 178643.8 330850.5
-## [134,] 178840.0 331069.4
-## [135,] 178987.6 331213.9
-## [136,] 179129.8 331387.1
-## [137,] 179208.3 331457.6
-## [138,] 179299.2 331619.8
-## [139,] 179334.0 331707.6
-## [140,] 179375.0 331896.8
-## [141,] 179423.7 332025.4
-## [142,] 179484.2 332116.0
-## [143,] 179500.5 332140.5
-## [144,] 179601.6 332222.9
-## [145,] 179789.1 332324.8
-## [146,] 179901.7 332357.7
-## [147,] 179965.5 332376.3
-## [148,] 180153.4 332490.9
-## [149,] 180296.9 332606.9
-## [150,] 180390.0 332737.3
-## [151,] 180481.4 332909.0
-## [152,] 180695.3 333432.4
-## [153,] 180871.1 333661.7
-## [154,] 181395.9 334130.0
-## [155,] 181423.6 334170.2
-## [156,] 181567.0 334377.7
-## [157,] 181606.5 334519.2
-## [158,] 181622.3 334715.3
-## [159,] 181570.5 335323.9
-## [160,] 181569.0 335519.7
-## [161,] 181581.5 335709.6
-## [162,] 181626.9 335936.5
-## [163,] 181661.9 336024.3
-## [164,] 181716.7 336162.0
-## [165,] 181855.3 336427.2
-## [166,] 182167.2 336848.5
-## [167,] 182222.0 336973.6
-## [168,] 182234.5 337060.8
-## [169,] 182242.4 337115.7
-## [170,] 182224.0 337230.5
-## [171,] 182197.6 337298.0
-## [172,] 182164.0 337354.6
-## [173,] 182107.3 337450.0
-## [174,] 181981.7 337587.3
-## [175,] 181810.4 337684.8
-## [176,] 182003.7 337678.6
-```
-
-```r
 meuse_lst <-list(Polygons(list(Polygon(meuse.riv)), "meuse.riv"))
 meuse_sp <- SpatialPolygons(meuse_lst)
 
 plot(meuse_sp, axes=F)
 plot(meuse, add=T, pch=16, cex=0.5)
 ```
-
-![plot of chunk unnamed-chunk-35](figure/unnamed-chunk-35-2.png)
 Try adding axes by using the `axes=T` argument.
 
 Note that R has reserved the space that would have been taken up by the axes, even though they aren't plotted. Using the `par` command we can change many graphical parameters. It's good practice to save the `default` par arguments.
 
 
-
-```r
+```{r, eval=FALSE}
 ##par arguements
 oldpar = par(no.readonly = TRUE)
 layout(matrix(c(1,2),1,2))
@@ -1092,8 +543,7 @@ par(oldpar)
 *note* In the Data folder you will find a *Shapefile* of the Canadian coastline. We haven't covered this yet, but you can input, and plot this shapefile using the following code:
 
 
-
-```r
+```{r, eval=FALSE}
 install.packages('rgdal')
 library(rgdal) ##we will cover this in the following section
 can_border <- readOGR(dsn='Data', layer='Canada')
@@ -1111,8 +561,7 @@ Calls to the GDAL framework are made using the r package `rgdal`. You should now
 The main reason this package is so important for working scientists and analysts, is that it allows the import and export of the common ESRI data, shapefiles.
 
 
-
-```r
+```{r, eval=FALSE}
 install.packages('rgdal')
 library('rgdal')
 ```
@@ -1130,70 +579,17 @@ Lets read it in and then map their Sydney sites. I have exported raw data and co
 The key component of reading in Shapefile data is to use the `readOGR` function. Note that several other methods exists, but the readOGR, from the rgdal package is most reliable and useful.
 
 
-
-```r
+```{r, fig.width=6, fig.height=6}
 rls <- readOGR(dsn='Data', layer='rls_sites_sydney')
-```
-
-```
-## OGR data source with driver: ESRI Shapefile 
-## Source: "Data", layer: "rls_sites_sydney"
-## with 133 features
-## It has 6 fields
-```
-
-```r
 summary(rls)
-```
-
-```
-## Object of class SpatialPointsDataFrame
-## Coordinates:
-##                 min       max
-## coords.x1  325694.1  343135.4
-## coords.x2 6228550.2 6260854.4
-## Is projected: TRUE 
-## proj4string :
-## [+proj=utm +zone=56 +south +ellps=WGS84 +units=m +no_defs]
-## Number of points: 133
-## Data attributes:
-##                       Site        SurveyID             lat        
-##  Grotto Point Lighthouse:  7   Min.   : 2000854   Min.   :-34.07  
-##  Bare Island            :  5   1st Qu.: 2001100   1st Qu.:-33.86  
-##  Camp Cove NE           :  5   Median : 2001289   Median :-33.84  
-##  Fairlight              :  5   Mean   : 2602891   Mean   :-33.86  
-##  The Gap                :  5   3rd Qu.: 2001926   3rd Qu.:-33.82  
-##  Browns Rock            :  4   Max.   :10000059   Max.   :-33.78  
-##  (Other)                :102                                      
-##       lon           richness       totalfish   
-##  Min.   :151.1   Min.   : 5.00   Min.   :  30  
-##  1st Qu.:151.3   1st Qu.:16.00   1st Qu.: 367  
-##  Median :151.3   Median :22.00   Median : 862  
-##  Mean   :151.3   Mean   :21.48   Mean   :1021  
-##  3rd Qu.:151.3   3rd Qu.:26.00   3rd Qu.:1316  
-##  Max.   :151.3   Max.   :45.00   Max.   :6502  
-## 
-```
-
-```r
 plot(rls, pch=16)
 ```
-
-![plot of chunk unnamed-chunk-39](figure/unnamed-chunk-39-1.png)
 
 lets also bring in a Sydney Harbour shoreline layer, also as an ESRI Shapefile.
 
 
-
-```r
+```{r}
 syd <- readOGR(dsn='Data', layer='SH_est_poly_utm')
-```
-
-```
-## OGR data source with driver: ESRI Shapefile 
-## Source: "Data", layer: "SH_est_poly_utm"
-## with 1 features
-## It has 1 fields
 ```
 
 The Sydney shoreline files are simply in Longitude and Latitude (using the WGS84 representation of the Earth). Lets change this CRS to represent a local projection commonly used here in New South Wales. It is simply the Universal Transverse Mercator. 
@@ -1205,8 +601,7 @@ The UTM system divides the Earth between 80°S and 84°N latitude into 60 zones,
 The `spTransorm` function within `rgdal` can *project* our lat/lon CRS into the correct UTM zone. Here in Sydney, the UTM zone is 56.
 
 
-
-```r
+```{r}
 syd <- spTransform(syd, CRS('+proj=utm +zone=56 +south +ellps=WGS84 +units=m +no_defs'))
 ```
 
@@ -1215,8 +610,7 @@ note the rls data is already projected, and this projection is brought into R fr
 Lets plot this out nicely.
 
 
-
-```r
+```{r, fig.width=6, fig.height=6}
 plot(syd, axes=F, col='grey')
 plot(rls, pch=16, col='dodgerblue',add=T)
 title('Reef Life Survey Sites - Sydney Area', line=0.5)
@@ -1228,8 +622,6 @@ map.scale(xc= 325000, yc= 6250000, len=2000, ndivs=2, units='km')
 north.arrow(xb= 325000, yb= 6258000, len=100)
 ```
 
-![plot of chunk unnamed-chunk-42](figure/unnamed-chunk-42-1.png)
-
 [![Spatial Visualisation](http://img.youtube.com/vi/qGllzWt0acU/0.jpg)](http://www.youtube.com/watch?v=qGllzWt0acU)
 
 ##Two common spatial manipulations
@@ -1240,99 +632,14 @@ The figure produced above has points that fall outside the actual Harbour. We ca
 
 
 
-
-```r
+```{r, fig.width=6, fig.height=6}
 syd_pol <- as(syd, "SpatialPolygons")
 over(rls, syd_pol) #which sites are 'over' the polygon. Creates 
-```
-
-```
-##   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18 
-##  NA  NA  NA  NA  NA  NA  NA  NA   1   1  NA  NA  NA   1   1  NA  NA  NA 
-##  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36 
-##  NA   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 
-##  37  38  39  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54 
-##   1   1   1   1   1   1   1   1   1   1  NA  NA   1   1  NA  NA   1   1 
-##  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69  70  71  72 
-##  NA   1  NA  NA  NA  NA  NA  NA  NA  NA  NA  NA  NA  NA  NA   1   1   1 
-##  73  74  75  76  77  78  79  80  81  82  83  84  85  86  87  88  89  90 
-##   1   1   1   1   1   1  NA   1   1  NA  NA   1   1   1   1   1   1   1 
-##  91  92  93  94  95  96  97  98  99 100 101 102 103 104 105 106 107 108 
-##   1   1   1   1   1   1   1   1   1  NA  NA  NA  NA   1   1   1   1   1 
-## 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 
-##   1   1   1   1   1   1  NA  NA  NA  NA  NA  NA  NA  NA  NA   1   1   1 
-## 127 128 129 130 131 132 133 
-##   1   1  NA  NA  NA  NA  NA
-```
-
-```r
 !is.na(over(rls, as(syd, "SpatialPolygons")))
-```
-
-```
-##     1     2     3     4     5     6     7     8     9    10    11    12 
-## FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE 
-##    13    14    15    16    17    18    19    20    21    22    23    24 
-## FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE 
-##    25    26    27    28    29    30    31    32    33    34    35    36 
-##  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE 
-##    37    38    39    40    41    42    43    44    45    46    47    48 
-##  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE FALSE 
-##    49    50    51    52    53    54    55    56    57    58    59    60 
-##  TRUE  TRUE FALSE FALSE  TRUE  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE 
-##    61    62    63    64    65    66    67    68    69    70    71    72 
-## FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE  TRUE 
-##    73    74    75    76    77    78    79    80    81    82    83    84 
-##  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE FALSE FALSE  TRUE 
-##    85    86    87    88    89    90    91    92    93    94    95    96 
-##  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE 
-##    97    98    99   100   101   102   103   104   105   106   107   108 
-##  TRUE  TRUE  TRUE FALSE FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE 
-##   109   110   111   112   113   114   115   116   117   118   119   120 
-##  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE 
-##   121   122   123   124   125   126   127   128   129   130   131   132 
-## FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE FALSE FALSE FALSE 
-##   133 
-## FALSE
-```
-
-```r
 inside_harb <- is.na(over(rls, syd_pol))
 
 rls_harb <- rls[!inside_harb, ]
 summary(rls_harb)
-```
-
-```
-## Object of class SpatialPointsDataFrame
-## Coordinates:
-##                 min       max
-## coords.x1  332894.6  342417.8
-## coords.x2 6251610.5 6258572.0
-## Is projected: TRUE 
-## proj4string :
-## [+proj=utm +zone=56 +south +ellps=WGS84 +units=m +no_defs]
-## Number of points: 79
-## Data attributes:
-##                      Site       SurveyID             lat        
-##  Camp Cove NE          : 5   Min.   : 2000866   Min.   :-33.86  
-##  Fairlight             : 5   1st Qu.: 2001234   1st Qu.:-33.85  
-##  Chowder Bay           : 4   Median : 2001353   Median :-33.83  
-##  Inside North Head     : 4   Mean   : 2406619   Mean   :-33.83  
-##  Middle Head North East: 4   3rd Qu.: 2001930   3rd Qu.:-33.82  
-##  Middle Head Sth       : 4   Max.   :10000059   Max.   :-33.80  
-##  (Other)               :53                                      
-##       lon           richness       totalfish     
-##  Min.   :151.2   Min.   : 5.00   Min.   :  38.0  
-##  1st Qu.:151.3   1st Qu.:19.00   1st Qu.: 347.0  
-##  Median :151.3   Median :23.00   Median : 764.0  
-##  Mean   :151.3   Mean   :22.35   Mean   : 996.2  
-##  3rd Qu.:151.3   3rd Qu.:27.00   3rd Qu.:1228.5  
-##  Max.   :151.3   Max.   :43.00   Max.   :6502.0  
-## 
-```
-
-```r
 plot(syd, col='lightgrey')
 plot(rls_harb, col='dodgerblue', add=T, pch=18)
 title('Reef Life Survey Sites - Sydney Harbour only', line=0.5)
@@ -1340,49 +647,19 @@ map.scale(xc= 325000, yc= 6250000, len=2000, ndivs=2, units='kms')
 north.arrow(xb= 325000, yb= 6258000, len=100)
 ```
 
-![plot of chunk unnamed-chunk-43](figure/unnamed-chunk-43-1.png)
-
 ####Spatial Polygon Dissolves
 
 Sometimes there is a need to dissolve smaller polygons into larger ones. Think, for example, about having a Spatial Polygon dataset of Postal codes that you need to aggregate up into states. We'll work with a dataset that notes the participation in school sport across areas of the greater London metro area. Pretend there is a need to aggregate this shapefile simply into the area of greater London.
 
 
-
-```r
+```{r, fig.height=6, fig.width=6}
 london_sport <- readOGR(dsn="Data", layer="london_sport")
-```
-
-```
-## OGR data source with driver: ESRI Shapefile 
-## Source: "Data", layer: "london_sport"
-## with 33 features
-## It has 4 fields
-```
-
-```r
 plot(london_sport)
-```
-
-![plot of chunk unnamed-chunk-44](figure/unnamed-chunk-44-1.png)
-
-```r
 proj4string(london_sport) <- CRS("+init=epsg:27700")
-```
-
-```
-## Warning in `proj4string<-`(`*tmp*`, value = <S4 object of class structure("CRS", package = "sp")>): A new CRS was assigned to an object with an existing CRS:
-## +proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +units=m +no_defs
-## without reprojecting.
-## For reprojection, use function spTransform in package rgdal
-```
-
-```r
 london_sport$london <- rep(1, length(london_sport))
 london <- unionSpatialPolygons(london_sport, IDs=london_sport$london)
 plot(london)
 ```
-
-![plot of chunk unnamed-chunk-44](figure/unnamed-chunk-44-2.png)
 
 
 ###Exercise Two
@@ -1398,8 +675,7 @@ We wouldn't really use the base plotting function for anything other than basic 
 Lets work with the London Sport Participation dataset to start.
 
 
-
-```r
+```{r}
 ##To get the shapefiles into a 
 ##format that can be plotted we have to use the fortify() function. 
 ##he “polygons” slot contains the geometry of the polygons in the form 
@@ -1409,236 +685,50 @@ Lets work with the London Sport Participation dataset to start.
 
 sport.f <- fortify(london_sport, region = "ons_label")
 head(sport.f)
-```
 
-```
-##       long      lat order  hole piece   id  group
-## 1 531026.9 181611.1     1 FALSE     1 00AA 00AA.1
-## 2 531554.9 181659.3     2 FALSE     1 00AA 00AA.1
-## 3 532135.6 182198.4     3 FALSE     1 00AA 00AA.1
-## 4 532946.1 181894.8     4 FALSE     1 00AA 00AA.1
-## 5 533410.7 182037.9     5 FALSE     1 00AA 00AA.1
-## 6 533842.7 180793.6     6 FALSE     1 00AA 00AA.1
-```
-
-```r
 ##need to merge back in the attribute data
 sport.f <- merge(sport.f, london_sport@data, by.x = "id", by.y = "ons_label")
 head(sport.f)
-```
 
-```
-##     id     long      lat order  hole piece  group           name
-## 1 00AA 531026.9 181611.1     1 FALSE     1 00AA.1 City of London
-## 2 00AA 531554.9 181659.3     2 FALSE     1 00AA.1 City of London
-## 3 00AA 532135.6 182198.4     3 FALSE     1 00AA.1 City of London
-## 4 00AA 532946.1 181894.8     4 FALSE     1 00AA.1 City of London
-## 5 00AA 533410.7 182037.9     5 FALSE     1 00AA.1 City of London
-## 6 00AA 533842.7 180793.6     6 FALSE     1 00AA.1 City of London
-##   Partic_Per Pop_2001 london
-## 1        9.1     7181      1
-## 2        9.1     7181      1
-## 3        9.1     7181      1
-## 4        9.1     7181      1
-## 5        9.1     7181      1
-## 6        9.1     7181      1
-```
 
-```r
 Map <- ggplot(sport.f, aes(long, lat, group = group, fill = Partic_Per)) + 
 	geom_polygon() + 
     coord_equal() + 
     labs(x = "Easting (m)", y = "Northing (m)", fill = "% Sport Partic.") + 
     ggtitle("London Sports Participation")
 Map
-```
 
-![plot of chunk unnamed-chunk-45](figure/unnamed-chunk-45-1.png)
-
-```r
 ##and if we wanted black and white for publication
 
 Map + scale_fill_gradient(low = "white", high = "black")
 ```
 
-![plot of chunk unnamed-chunk-45](figure/unnamed-chunk-45-2.png)
-
 Remember faceting? Well that can be done with maps as well using ggplot. We need to use a function called `melt` and `reshape` to get the data in the right form though.
 
 
-
-```r
+```{r, fig.width=7, fig.height=7}
 ###faceting maps - courtesy of James Cheshire and spatial.ly
 library(reshape2) 
 london.data <- read.csv("Data/census-historic-population-borough.csv")
 head(london.data)
-```
 
-```
-##   Area.Code            Area.Name Pop_1801 Pop_1811 Pop_1821 Pop_1831
-## 1      00AA       City of London   129000   121000   125000   123000
-## 2      00AB Barking and Dagenham     3000     4000     5000     6000
-## 3      00AC               Barnet     8000     9000    11000    13000
-## 4      00AD               Bexley     5000     6000     7000     9000
-## 5      00AE                Brent     2000     2000     3000     3000
-## 6      00AF              Bromley     8000     9000    11000    12000
-##   Pop_1841 Pop_1851 Pop_1861 Pop_1871 Pop_1881 Pop_1891 Pop_1901 Pop_1911
-## 1   124000   128000   112000    75000    51000    38000    27000    20000
-## 2     7000     8000     8000    10000    13000    19000    27000    39000
-## 3    14000    15000    20000    29000    41000    58000    76000   118000
-## 4    11000    12000    15000    22000    29000    37000    54000    60000
-## 5     5000     5000     6000    19000    31000    65000   120000   166000
-## 6    14000    16000    22000    42000    62000    83000   100000   116000
-##   Pop_1921 Pop_1931 Pop_1939 Pop_1951 Pop_1961 Pop_1971 Pop_1981 Pop_1991
-## 1    14000    11000     9000     5000     4767     4000     5864     4230
-## 2    44000   138000   184000   189000   177092   161000   149786   140728
-## 3   147000   231000   296000   320000   318373   307000   293436   284106
-## 4    76000    95000   179000   205000   209893   217000   215233   211404
-## 5   184000   251000   310000   311000   295893   281000   253275   227903
-## 6   127000   165000   237000   268000   294440   305000   296539   282920
-##   Pop_2001
-## 1     7181
-## 2   163944
-## 3   314565
-## 4   218301
-## 5   263466
-## 6   295535
-```
-
-```r
 london.data.melt <- melt(london.data, id = c("Area.Code", "Area.Name"))
 london.data.melt[1:50,]
-```
 
-```
-##    Area.Code              Area.Name variable   value
-## 1       00AA         City of London Pop_1801  129000
-## 2       00AB   Barking and Dagenham Pop_1801    3000
-## 3       00AC                 Barnet Pop_1801    8000
-## 4       00AD                 Bexley Pop_1801    5000
-## 5       00AE                  Brent Pop_1801    2000
-## 6       00AF                Bromley Pop_1801    8000
-## 7       00AG                 Camden Pop_1801  100000
-## 8       00AH                Croydon Pop_1801    8000
-## 9       00AJ                 Ealing Pop_1801    7000
-## 10      00AK                Enfield Pop_1801   11000
-## 11      00AL              Greenwich Pop_1801   35000
-## 12      00AM                Hackney Pop_1801   50000
-## 13      00AN Hammersmith and Fulham Pop_1801   10000
-## 14      00AP               Haringey Pop_1801    6000
-## 15      00AQ                 Harrow Pop_1801    4000
-## 16      00AR               Havering Pop_1801    6000
-## 17      00AS             Hillingdon Pop_1801    9000
-## 18      00AT               Hounslow Pop_1801   14000
-## 19      00AU              Islington Pop_1801   65000
-## 20      00AW Kensington and Chelsea Pop_1801   18000
-## 21      00AX   Kingston upon Thames Pop_1801    5000
-## 22      00AY                Lambeth Pop_1801   33000
-## 23      00AZ               Lewisham Pop_1801   16000
-## 24      00BA                 Merton Pop_1801    5000
-## 25      00BB                 Newham Pop_1801    8000
-## 26      00BC              Redbridge Pop_1801    4000
-## 27      00BD   Richmond upon Thames Pop_1801   15000
-## 28      00BE              Southwark Pop_1801  116000
-## 29      00BF                 Sutton Pop_1801    5000
-## 30      00BG          Tower Hamlets Pop_1801  144000
-## 31      00BH         Waltham Forest Pop_1801    8000
-## 32      00BJ             Wandsworth Pop_1801   13000
-## 33      00BK            Westminster Pop_1801  231000
-## 34      UKI1           Inner London Pop_1801  939000
-## 35      UKI2           Outer London Pop_1801  162000
-## 36         H         Greater London Pop_1801 1097000
-## 37      00AA         City of London Pop_1811  121000
-## 38      00AB   Barking and Dagenham Pop_1811    4000
-## 39      00AC                 Barnet Pop_1811    9000
-## 40      00AD                 Bexley Pop_1811    6000
-## 41      00AE                  Brent Pop_1811    2000
-## 42      00AF                Bromley Pop_1811    9000
-## 43      00AG                 Camden Pop_1811  128000
-## 44      00AH                Croydon Pop_1811   10000
-## 45      00AJ                 Ealing Pop_1811    8000
-## 46      00AK                Enfield Pop_1811   13000
-## 47      00AL              Greenwich Pop_1811   46000
-## 48      00AM                Hackney Pop_1811   64000
-## 49      00AN Hammersmith and Fulham Pop_1811   13000
-## 50      00AP               Haringey Pop_1811    7000
-```
-
-```r
 ##remember what sport.f id was! How cool, now we can merge these data.
 head(sport.f)
-```
-
-```
-##     id     long      lat order  hole piece  group           name
-## 1 00AA 531026.9 181611.1     1 FALSE     1 00AA.1 City of London
-## 2 00AA 531554.9 181659.3     2 FALSE     1 00AA.1 City of London
-## 3 00AA 532135.6 182198.4     3 FALSE     1 00AA.1 City of London
-## 4 00AA 532946.1 181894.8     4 FALSE     1 00AA.1 City of London
-## 5 00AA 533410.7 182037.9     5 FALSE     1 00AA.1 City of London
-## 6 00AA 533842.7 180793.6     6 FALSE     1 00AA.1 City of London
-##   Partic_Per Pop_2001 london
-## 1        9.1     7181      1
-## 2        9.1     7181      1
-## 3        9.1     7181      1
-## 4        9.1     7181      1
-## 5        9.1     7181      1
-## 6        9.1     7181      1
-```
-
-```r
 plot.data <- merge(sport.f, london.data.melt, by.x = "id", by.y = "Area.Code")
 head(plot.data)
-```
 
-```
-##     id     long      lat order  hole piece  group           name
-## 1 00AA 531026.9 181611.1     1 FALSE     1 00AA.1 City of London
-## 2 00AA 531026.9 181611.1     1 FALSE     1 00AA.1 City of London
-## 3 00AA 531026.9 181611.1     1 FALSE     1 00AA.1 City of London
-## 4 00AA 531026.9 181611.1     1 FALSE     1 00AA.1 City of London
-## 5 00AA 531026.9 181611.1     1 FALSE     1 00AA.1 City of London
-## 6 00AA 531026.9 181611.1     1 FALSE     1 00AA.1 City of London
-##   Partic_Per Pop_2001 london      Area.Name variable  value
-## 1        9.1     7181      1 City of London Pop_1901  27000
-## 2        9.1     7181      1 City of London Pop_1831 123000
-## 3        9.1     7181      1 City of London Pop_1821 125000
-## 4        9.1     7181      1 City of London Pop_1971   4000
-## 5        9.1     7181      1 City of London Pop_1811 121000
-## 6        9.1     7181      1 City of London Pop_2001   7181
-```
-
-```r
 ##order so plots are sensible i.e. in time order
 plot.data <- plot.data[order(plot.data$order), ]
 head(plot.data)
-```
 
-```
-##     id     long      lat order  hole piece  group           name
-## 1 00AA 531026.9 181611.1     1 FALSE     1 00AA.1 City of London
-## 2 00AA 531026.9 181611.1     1 FALSE     1 00AA.1 City of London
-## 3 00AA 531026.9 181611.1     1 FALSE     1 00AA.1 City of London
-## 4 00AA 531026.9 181611.1     1 FALSE     1 00AA.1 City of London
-## 5 00AA 531026.9 181611.1     1 FALSE     1 00AA.1 City of London
-## 6 00AA 531026.9 181611.1     1 FALSE     1 00AA.1 City of London
-##   Partic_Per Pop_2001 london      Area.Name variable  value
-## 1        9.1     7181      1 City of London Pop_1901  27000
-## 2        9.1     7181      1 City of London Pop_1831 123000
-## 3        9.1     7181      1 City of London Pop_1821 125000
-## 4        9.1     7181      1 City of London Pop_1971   4000
-## 5        9.1     7181      1 City of London Pop_1811 121000
-## 6        9.1     7181      1 City of London Pop_2001   7181
-```
-
-```r
 ##now simply facet them in the usual ggplot way!
 ggplot(data = plot.data, aes(x = long, y = lat, fill = value, group = group)) + 
     geom_polygon() + geom_path(colour = "grey", lwd = 0.1) + coord_equal() + 
     facet_wrap(~variable)
 ```
-
-![plot of chunk unnamed-chunk-46](figure/unnamed-chunk-46-1.png)
 
 
 [![Spatial Visualisation](http://img.youtube.com/vi/6pI77r3oAxw/0.jpg)](http://www.youtube.com/watch?v=6pI77r3oAxw)
@@ -1656,8 +746,7 @@ Exercises Three
 Check if you can see the data - your working directory should be this file's location, and your data should be in Data/
 
 
-
-```r
+```{r, eval=FALSE}
 file.exists("Data/Cairns_Mangroves_30m.tif")
 file.exists("Data/SST_feb_2013.img")
 file.exists("Data/SST_feb_mean.img")
@@ -1668,16 +757,14 @@ You should also have a folder Output/ for when we export results
 Install the packages we're going to need - raster for raster objects, dismo is SDM, rgdal to read and write various spatial data
 
 
-
-```r
+```{r, eval=FALSE}
 install.packages(c('raster', 'dismo','rgdal', 'gstat'))
 ```
 
 Check that you can load them
 
 
-
-```r
+```{r, eval=FALSE}
 library(raster)
 library(dismo)
 library(rgdal)
@@ -1694,8 +781,7 @@ Now we're ready to go, but firstly, what is a raster? Well, simply, it is a grid
 Make a raster object, and query it
 
 
-
-```r
+```{r, eval=FALSE}
 x <- raster(ncol = 10, nrow = 10) # let's make a small raster
 nrow(x) # number of pixels
 ncol(x) # number of pixels
@@ -1709,8 +795,7 @@ plot(x) # entire raster has a pixel value of 1
 Make a random number raster so we can see what's happening a little easier
 
 
-
-```r
+```{r, eval=FALSE}
 values(x) <- runif(ncell(x)) # each pixel is assigned a random number
 plot(x) # raster now has pixels with random numbers
 values(x) <- runif(ncell(x))
@@ -1723,16 +808,14 @@ x[,1]
 Use this to interactively query the raster - press esc to exit
 
 
-
-```r
+```{r, eval=FALSE}
 click(x)
 ```
 
 What's special about a raster object?
 
 
-
-```r
+```{r, eval=FALSE}
 str(x) # note the CRS and extent, plus plenty of other slots
 crs(x) # check what coordinate system it is in, the default in the PROJ.4 format
 xmax(x) # check extent
@@ -1756,8 +839,7 @@ yres(x) # just pixel height
 Import the Cairns mangrove data and have a look at it
 
 
-
-```r
+```{r, eval=FALSE}
 mangrove <- raster("Data/Cairns_Mangroves_30m.tif") 
 crs(mangrove) # get projection
 plot(mangrove, col = topo.colors("2")) # note two pixel values, 0 (not mangrove) and 1 (mangrove)
@@ -1768,8 +850,7 @@ plot(mangrove, col = "mediumseagreen")
 The legend is a little odd - we can change to a categorical legend by doign this - but we'll stick to the default continous bar generally so as to reduce clutter in the code
 
 
-
-```r
+```{r, eval=FALSE}
 cols <- c("white","red")
 plot(mangrove, col=cols, legend=F)
 legend(x='bottomleft', legend=c("no mangrove", "mangrove"), fill=cols)
@@ -1778,8 +859,7 @@ legend(x='bottomleft', legend=c("no mangrove", "mangrove"), fill=cols)
 Simple processing
 
 
-
-```r
+```{r, eval=FALSE}
 agg.mangrove <- aggregate(mangrove, fact=10) # aggregate/resample cells (10 times bigger)
 
 par(mfrow=c(2,2))
@@ -1792,8 +872,7 @@ plot(mangrove, col = "mediumseagreen", add=TRUE) # add information to current pl
 Create a simple buffer
 
 
-
-```r
+```{r, eval=FALSE}
 buf.mangrove <- buffer(agg.mangrove, width=1000) # add a buffer
 par(mfrow=c(1,1))
 plot(buf.mangrove, col = "peachpuff")
@@ -1803,8 +882,7 @@ plot(mangrove, col = "mediumseagreen", add = T) # note add= argument
 Convert raster to point data, and then import point data as raster
 
 
-
-```r
+```{r, eval=FALSE}
 pts.mangrove <- rasterToPoints(mangrove)
 str(pts.mangrove)
 
@@ -1823,8 +901,7 @@ par(mfrow=c(1,1))
 Export your data - lets try the aggregated raster
 
 
-
-```r
+```{r, eval=FALSE}
 KML(agg.mangrove, "Output/agg.mangrove.kml", overwrite = TRUE)
 writeRaster(agg.mangrove, "Output/agg.mangrove.tif", format = "GTiff")
 ```
@@ -1832,8 +909,7 @@ writeRaster(agg.mangrove, "Output/agg.mangrove.tif", format = "GTiff")
 Hang on, what about multiband rasters? The raster package handles them in the same way, just the ```nbands()``` attribute is >1 - think about an array instead of a matrix
 
 
-
-```r
+```{r, eval=FALSE}
 multiband <- raster("Data/multiband.tif")
 nbands(multiband)
 nrow(multiband) 
@@ -1844,8 +920,7 @@ ncell(multiband)
 What about making our own multiband raster?
 
 
-
-```r
+```{r, eval=FALSE}
 for (i in 1:4) { assign(x=paste0("band",i), value=raster(ncol=10,nrow=10))}
 values(band1) <- runif(100); values(band2) <- runif(100); values(band3) <- runif(100); values(band4) <- runif(100)
 multiband.stack <- stack(list(band1,band2,band3,band4))
@@ -1856,8 +931,7 @@ plot(multiband.stack)
 Plotting an RGB image?
 
 
-
-```r
+```{r, eval=FALSE}
 plotRGB(multiband.stack, r=1, g=2, b=3)
 range(multiband.stack)
 plotRGB(multiband.stack, r=1, g=2, b=3, scale=1) # let it know what the max value is for display
@@ -1868,8 +942,7 @@ plotRGB(multiband.stack, r=2, g=3, b=4, scale=1)
 Other handy processing functions
 
 
-
-```r
+```{r, eval=FALSE}
 ?crop
 ?merge
 ?trim
@@ -1881,8 +954,7 @@ Other handy processing functions
 Some handy analysis functions
 
 
-
-```r
+```{r, eval=FALSE}
 ?zonal # zonal statistics
 ?focal # moving windows
 ?calc # raster calculator
@@ -1895,8 +967,7 @@ Some handy analysis functions
 We won't go into detail on coordinate and projection systems today, but *very* briefly, remembering ```CRS()``` objects from the earlier sessions
 
 
-
-```r
+```{r, eval=FALSE}
 crs(mangrove)
 proj4string(mangrove)
 
@@ -1931,8 +1002,7 @@ Now let's take a bit of a whirlwind tour of the types of analyses we can do, and
 Load up some SST data - Feb 2013 for the globe (as an aside, check this link for more great ocean global data sets: http://oceancolor.gsfc.nasa.gov/cms/)
 
 
-
-```r
+```{r, eval=FALSE}
 sst.feb <- raster("Data/SST_feb_2013.img")
 plot(sst.feb)
 ```
@@ -1940,8 +1010,7 @@ plot(sst.feb)
 Crop it to the pacific so we can compare our mangrove data
 
 
-
-```r
+```{r, eval=FALSE}
 pacific.extent <- extent(mangrove) + 80 # take advantage of the way R handles vector arithmatic!
 pacific.extent # check it
 sst.feb.crop <- crop(sst.feb, pacific.extent) # crop to the pacific
@@ -1951,8 +1020,7 @@ plot (sst.feb.crop)
 Load up the long term mean SST data for Feb
 
 
-
-```r
+```{r, eval=FALSE}
 sst.feb.mn <- raster("Data/SST_feb_mean.img")
 plot(sst.feb.mn)
 sst.mn.crop <- crop(sst.feb.mn, pacific.extent)
@@ -1962,8 +1030,7 @@ plot (sst.mn.crop)
 Now let's make an SST anomoly map
 
 
-
-```r
+```{r, eval=FALSE}
 sst.anomaly <- sst.feb.crop - sst.mn.crop # R + {raster} matrix arithmatic
 plot (sst.anomaly) # plot the anomaly map
 plot(sst.anomaly, col = topo.colors("100")) # different colours
@@ -1974,8 +1041,7 @@ contour(sst.anomaly, add = T) # add contours
 Query single values,
 
 
-
-```r
+```{r, eval=FALSE}
 minValue(sst.anomaly) # coldest pixel
 maxValue(sst.anomaly) # warmest pixel
 plot(sst.anomaly==maxValue(sst.anomaly))
@@ -1984,8 +1050,7 @@ plot(sst.anomaly==maxValue(sst.anomaly))
 or plots/stats for the entire image,
 
 
-
-```r
+```{r, eval=FALSE}
 plot(sst.anomaly > 1)
 hist(sst.anomaly, main = "February SST Anomaly - Pacific", xlab = "sst anomaly")
 ```
@@ -1993,8 +1058,7 @@ hist(sst.anomaly, main = "February SST Anomaly - Pacific", xlab = "sst anomaly")
 or let's be a litle more tricky!
 
 
-
-```r
+```{r, eval=FALSE}
 max.anom <- which.max(sst.anomaly)
 max.xy <- xyFromCell(sst.anomaly, max.anom)
 plot(sst.anomaly, col = rev(heat.colors("100")))
@@ -2004,8 +1068,7 @@ points(max.xy, pch=8, cex=2)
 Sampling points conditionally? Sure. We'll see a better wrapper for this further down though.
 
 
-
-```r
+```{r, eval=FALSE}
 xy <- xyFromCell(sst.anomaly,sample(1:ncell(sst.anomaly), 20)) # 20 random points
 points(xy)
 extract(sst.feb, xy)
@@ -2015,8 +1078,7 @@ extract(sst.feb, xy)
 Re-capping writing back to disk
 
 
-
-```r
+```{r, eval=FALSE}
 # writing rasters
 writeRaster(sst.anomaly, "Output/sst.anomaly.tif", format = "GTiff")
 KML(sst.anomaly, "Output/sst.anomaly.kml")
@@ -2027,8 +1089,7 @@ save(sst.feb.mn, file="Output/sst.feb.mn.RData") # check the file size, huh?
 What's going on with those last two ```{r, eval=FALSE} save()``` commands? Something else to understand about the way the ```{r, eval=FALSE} raster``` package handles raster files is that for larger rasters, the whole file is not stored in memory, rather it is just a pointer to the file. You can test whether or not it is
 
 
-
-```r
+```{r, eval=FALSE}
 inMemory(sst.feb.mn) # R will only access file  when needed.
 inMemory(sst.anomaly) # it's in memory. 
 ```
@@ -2036,8 +1097,7 @@ inMemory(sst.anomaly) # it's in memory.
 We saw ```stack()``` earlier, and we can use it for multi-band imagery, but also to stack up different information sources. ```brick()``` works in the same way, except that it is designed for smaller objects, and a RasterBrick can only point to one file, opposed to a RasterStack, which can point to multiple files.
 
 
-
-```r
+```{r, eval=FALSE}
 sst.stack <- stack(sst.mn.crop, sst.feb.crop, sst.anomaly)
 plot(sst.stack)
 nlayers(sst.stack)
@@ -2051,8 +1111,7 @@ names(sst.stack)[3] <- "SST_anomaly"
 Now let's look at quick example of what we can do with rasters in context of species distribution modelling and spatial modelling. First lets extract some random points - make sure you've run ```library(dismo)```
 
 
-
-```r
+```{r, eval=FALSE}
 rpoints.sst <- randomPoints(sst.stack,500) #?randomPoints for more options
 plot(sst.stack,2)
 points(rpoints.sst, pch = 16, cex = 0.7)
@@ -2065,8 +1124,7 @@ plot(sst.samp$SST_anomaly ~ sst.samp$SST_feb_2013)
 What if we had some real biological data at those points? Well, let's make some up, and then fit a model to it
 
 
-
-```r
+```{r, eval=FALSE}
 sst.samp$shark.abund <- rpois(n=nrow(sst.samp), lambda=round(sst.samp$SST_feb_2013))
 plot(sst.samp$shark.abund ~ sst.samp$SST_feb_2013)
 shark.glm <- glm(shark.abund ~ SST_feb_2013 + SST_anomaly, 
@@ -2077,8 +1135,7 @@ summary(shark.glm)
 We would usually use ```predict()``` on a model fit object, and we can use it similarly for predicting out to raster data
 
 
-
-```r
+```{r, eval=FALSE}
 predict(shark.glm, type="response")
 shark.predict <- predict(sst.stack, shark.glm, type='response')
 plot(shark.predict, col=rev(rainbow(n=10, start=0, end=0.3)), main="Shark abundance as a function of SST")
@@ -2087,8 +1144,7 @@ plot(shark.predict, col=rev(rainbow(n=10, start=0, end=0.3)), main="Shark abunda
 What if we just had the physical data at some points, and wanted to make those into a geographically weighted SST map? We'll use ```library(gstat)``` to try an IDW (inverse distance weighted) interpolation
 
 
-
-```r
+```{r, eval=FALSE}
 plot(sst.feb)
 rpoints.sst.feb <- randomPoints(sst.feb, 500)
 points(rpoints.sst.feb)
@@ -2107,8 +1163,7 @@ plot(sst.feb); plot(sst.idw)
 Let's have a go at ordinary kriging (ignoring assuptions about Gaussian repsosne data)
 
 
-
-```r
+```{r, eval=FALSE}
 # first some package specific projection stuff
 coordinates(rpoints.sst.feb) <- ~x+y
 proj4string(rpoints.sst.feb) <- proj4string(sst.feb)
@@ -2136,8 +1191,7 @@ plot(sst.feb); plot(sst.ordkrig)
 Let's get some climate data using the raster package
 
 
-
-```r
+```{r, eval=FALSE}
 par(mfrow=c(1,1))
 rain <- getData('worldclim', var="prec", res=10, lon=5, lat=45) # this will d/l data to getwd()
 plot(rain)
@@ -2152,8 +1206,7 @@ head(samp.rain)
 Get maps using dismo
 
 
-
-```r
+```{r, eval=FALSE}
 install.packages("XML"); library(XML)
 Aus <- gmap("Australia") # get google maps normal
 plot(Aus)
@@ -2164,8 +1217,7 @@ plot(AusSat)
 Get simple maps
 
 
-
-```r
+```{r, eval=FALSE}
 install.packages("maps"); library(maps)
 map(database = "world", col = "grey")
 ```
@@ -2173,8 +1225,7 @@ map(database = "world", col = "grey")
 A couple other handy packages
 
 
-
-```r
+```{r, eval=FALSE}
 library(rasterVis)
 library(maptools)
 ```

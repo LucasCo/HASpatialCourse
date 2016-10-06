@@ -2,7 +2,7 @@
 #Luke Hedge
 #Mitchell Lyons
 
-
+install.packages('RCurl')
 
 
 ##read in airport data from OpenFlights
@@ -21,7 +21,7 @@ oz <- map('world', 'Australia', plot=FALSE)
 oz_crs <- CRS('+proj=longlat +ellps=WGS84')
 oz <- map2SpatialLines(oz, proj4string=oz_crs)
 str(oz, max.level=2)
-
+plot(oz)
 
 
 
@@ -33,7 +33,6 @@ library(ggplot2)
 library(maptools)
 
 input<-read.table("Data/wu03ew_v1.csv", sep=",", header=T)
-
 input<- input[,1:3]
 names(input)<- c("origin", "destination","total")
 
@@ -63,9 +62,13 @@ library('maps')
 library('maptools')
 auc_crs <- CRS('+proj=longlat +ellps=WGS84')
 auc_shore <- MapGen2SL('Data/auckland_mapgen.dat', auc_crs)
+
 summary(auc_shore)
 
+plot(auc_shore)
+
 nz_lines <- slot(auc_shore, 'lines')
+
 table(sapply(nz_lines, function(x) length(slot(x, 'Lines'))))
 
 auc_islands <- sapply(nz_lines, function(x){
@@ -89,6 +92,8 @@ getClass('SpatialPolygons')
 slot(islands_sp, "plotOrder")
 
 
+library(sp)
+getClass('Spatial')
 
 ####Visualising Data
 
@@ -311,6 +316,25 @@ plot(can_border, col='wheat', axes=T)
 plot(can, add=T, cex=0.8, col='red', pch=18)
 title('Canadian airports')
 box()
+
+
+
+
+library(RCurl)
+URL <- "https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat"
+x <- getURL(URL)
+
+airports <- read.csv(textConnection(x), header = F)
+colnames(airports) <- c("ID", "name", "city", "country", "IATA_FAA", "ICAO", "lat", "lon", "altitude", "timezone", "DST", 
+    "TimeZone")
+head(airports)
+
+air_coords <- cbind(airports$lon, airports$lat)
+air_CRS <- CRS('+proj=longlat +ellps=WGS84')
+
+airports_sp <- SpatialPoints(air_coords, air_CRS)
+summary(airports_sp)
+
 
 
 
